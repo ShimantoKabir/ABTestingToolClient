@@ -19,6 +19,37 @@ div.left-menu {
       background-color: transparent;
       border: none;
     }
+
+    > div.loader-container {
+      height: calc(100vh - 5rem);
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      // Target the PrimeReact ProgressSpinner component globally
+      // :global() allows us to style third-party component classes from our scoped styles
+      :global(.p-progress-spinner) {
+        // Set the spinner container width to 35 pixels
+        width: 35px !important;
+        // Set the spinner container height to 35 pixels
+        // !important overrides PrimeReact's default sizing
+        height: 35px !important;
+      }
+
+      // Target the SVG element inside the ProgressSpinner
+      :global(.p-progress-spinner svg) {
+        // Control the rotation animation speed of the spinner
+        // 0.5s means the spinner completes one full rotation in 0.5 seconds
+        // Lower value = faster spinning, higher value = slower spinning
+        animation-duration: 0.5s;
+      }
+    }
+
+    > div.error-message {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
   }
 }
 

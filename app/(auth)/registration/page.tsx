@@ -218,7 +218,7 @@ export default function Registration() {
             label="Registration"
             className="w-full"
             loading={loading}
-            onClick={() => setOtpAppearance(true)}
+            onClick={() => onRegistrationClick()}
           ></Button>
         </div>
         <Divider layout="horizontal" className="hidden md:flex">

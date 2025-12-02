@@ -1,9 +1,12 @@
 "use client";
 import { TreeNode } from "primereact/treenode";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "@/app/(main)/components/menu/left/left-menu.scss";
 import { useMenuStore } from "@/app/(main)/components/menu/menu-store";
-import { MenuService } from "@/app/(main)/components/menu/services/menu.service";
+import {
+  MenuService,
+  MenuServiceToken,
+} from "@/app/(main)/components/menu/services/menu.service";
 import {
   Tree,
   TreeCheckboxSelectionKeys,
@@ -11,15 +14,38 @@ import {
   TreeNodeClickEvent,
 } from "primereact/tree";
 import { useRouter } from "next/navigation";
+import { container } from "@/app/di";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { Toast } from "primereact/toast";
 
 const LeftMenu = () => {
+  const menuService = container.get<MenuService>(MenuServiceToken);
   const { isLeftMenuMinimized } = useMenuStore();
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState({});
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const toast = useRef<Toast>(null);
 
   useEffect(() => {
-    MenuService.getMenuNodes().then((data) => setNodes(data));
+    setLoading(true);
+    menuService
+      .getMenuNodes()
+      .then((data: TreeNode[] | ErrorResponseDto) => {
+        if (data instanceof ErrorResponseDto) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: data.message,
+          });
+        } else {
+          setNodes(data);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const findSelectedNode = (
@@ -61,19 +87,26 @@ const LeftMenu = () => {
 
   return (
     <div className={isLeftMenuMinimized ? "hide left-menu" : "left-menu"}>
+      <Toast ref={toast} />
       <div className="logo">
         <h1>PyAdmin</h1>
       </div>
       <div className="menu-container">
-        <Tree
-          value={nodes}
-          selectionMode="single"
-          className="w-full menu-wrap"
-          expandedKeys={expandedKeys}
-          onToggle={(e) => setExpandedKeys(e.value)}
-          onSelectionChange={(e) => onSingleExpand(e.value)}
-          onNodeClick={(e) => onNodeClick(e)}
-        />
+        {loading ? (
+          <div className="loader-container">
+            <ProgressSpinner strokeWidth="4" fill="var(--surface-ground)" />
+          </div>
+        ) : (
+          <Tree
+            value={nodes}
+            selectionMode="single"
+            className="w-full menu-wrap"
+            expandedKeys={expandedKeys}
+            onToggle={(e) => setExpandedKeys(e.value)}
+            onSelectionChange={(e) => onSingleExpand(e.value)}
+            onNodeClick={(e) => onNodeClick(e)}
+          />
+        )}
       </div>
     </div>
   );

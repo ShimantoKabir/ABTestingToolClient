@@ -13,6 +13,11 @@ import {
   RegistrationServiceToken,
 } from "@/app/(auth)/registration/services/registration.service";
 import { RegistrationServiceImp } from "@/app/(auth)/registration/services/registration-imp.service";
+import {
+  MenuService,
+  MenuServiceToken,
+} from "@/app/(main)/components/menu/services/menu.service";
+import { MenuServiceImp } from "@/app/(main)/components/menu/services/menu-imp.service";
 import { Container } from "inversify";
 
 const container: Container = new Container();
@@ -22,5 +27,6 @@ container
   .bind<RegistrationService>(RegistrationServiceToken)
   .to(RegistrationServiceImp);
 container.bind<CookieService>(CookieServiceToken).to(CookieServiceImp);
+container.bind<MenuService>(MenuServiceToken).to(MenuServiceImp);
 
 export { container };

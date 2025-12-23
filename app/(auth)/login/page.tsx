@@ -17,6 +17,7 @@ import {
   LoginServiceToken,
 } from "@/app/(auth)/login/services/login.service";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { APP_NAME } from "@/app/constants";
 
 const login: React.FC = () => {
   const loginService = container.get<LoginService>(LoginServiceToken);
@@ -120,7 +121,7 @@ const login: React.FC = () => {
       <Toast ref={toast} />
       <div className="page-wrap">
         <div className="flex flex-column justify-content-center align-item-center w-full mb-4">
-          <h2 className="text-center">PYADMIN</h2>
+          <h2 className="text-center">{APP_NAME}</h2>
         </div>
         <div className="flex flex-column gap-1 mb-2">
           <label htmlFor="email">Email</label>

@@ -4,10 +4,11 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
+import { APP_NAME } from "./constants";
 
 export const metadata: Metadata = {
-  title: "PyAdmin",
-  description: "A user, role, menu, action management system!",
+  title: APP_NAME,
+  description: "A/B Testing Tool Admin Panel",
 };
 
 export default function RootLayout({

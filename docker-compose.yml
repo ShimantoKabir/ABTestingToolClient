@@ -1,38 +1,22 @@
 version: "3.8"
 
 services:
-  # Next.js Frontend
-  next-admin:
+  app:
+    container_name: ab-frontend
+    # We use the same build context, but we will override the startup command
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: next-admin-app
+    # CRITICAL: Mount local files to /app so source maps match exactly
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    # Override the production command to run dev mode with debugger
+    command: npm run dev:debug
     ports:
       - "3000:3000"
+      - "9229:9229" # Expose the debug port
     environment:
-      - NODE_ENV=development
-    depends_on:
-      - backend
-    networks:
-      - pyadmin-network
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     restart: unless-stopped
-
-  # Python Backend (FastAPI)
-  backend:
-    image: python:3.11-slim
-    container_name: pyadmin-backend
-    command: bash -c "pip install fastapi uvicorn sqlalchemy python-multipart pydantic && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-    working_dir: /app
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - pyadmin-network
-    restart: unless-stopped
-
-networks:
-  pyadmin-network:
-    driver: bridge

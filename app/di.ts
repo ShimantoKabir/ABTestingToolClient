@@ -19,6 +19,11 @@ import {
 } from "@/app/(main)/components/menu/services/menu.service";
 import { MenuServiceImp } from "@/app/(main)/components/menu/services/menu-imp.service";
 import { Container } from "inversify";
+import {
+  OrganizationService,
+  OrganizationServiceToken,
+} from "@/app/(auth)/org/services/organization.service";
+import { OrganizationServiceImp } from "@/app/(auth)/org/services/organization-imp.service";
 
 const container: Container = new Container();
 
@@ -28,5 +33,8 @@ container
   .to(RegistrationServiceImp);
 container.bind<CookieService>(CookieServiceToken).to(CookieServiceImp);
 container.bind<MenuService>(MenuServiceToken).to(MenuServiceImp);
+container
+  .bind<OrganizationService>(OrganizationServiceToken)
+  .to(OrganizationServiceImp);
 
 export { container };

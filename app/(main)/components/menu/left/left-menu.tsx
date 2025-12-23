@@ -18,6 +18,7 @@ import { container } from "@/app/di";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import { Toast } from "primereact/toast";
+import { APP_NAME } from "@/app/constants";
 
 const LeftMenu = () => {
   const menuService = container.get<MenuService>(MenuServiceToken);
@@ -89,7 +90,7 @@ const LeftMenu = () => {
     <div className={isLeftMenuMinimized ? "hide left-menu" : "left-menu"}>
       <Toast ref={toast} />
       <div className="logo">
-        <h1>PyAdmin</h1>
+        <h1>{APP_NAME}</h1>
       </div>
       <div className="menu-container">
         {loading ? (

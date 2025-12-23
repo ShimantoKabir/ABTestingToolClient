@@ -1,46 +1,59 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+# 1. Base image
+FROM node:20-alpine AS base
 
+# 2. Dependencies
+FROM base AS deps
 WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
+# libc6-compat is often needed for some Node libraries on Alpine
+RUN apk add --no-cache libc6-compat
+COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code
+# 3. Builder
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build Next.js app
+# --- CONFIGURATION ---
+# Set default API URL here. Next.js "bakes" this into the JS at build time.
+# If your backend changes URL, you must rebuild the image.
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# ---------------------
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the app
 RUN npm run build
 
-# Stage 2: Runtime
-FROM node:20-alpine
-
+# 4. Runner (Production Image)
+FROM base AS runner
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copy built app from builder stage
-COPY --from=builder /app/.next ./.next
+# Copy the public folder
 COPY --from=builder /app/public ./public
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+# Copy the build output (.next folder)
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+
+# Copy node_modules (Required for standard mode)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy package.json (Required for npm start)
+COPY --from=builder /app/package.json ./package.json
+
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Start Next.js app
 CMD ["npm", "start"]

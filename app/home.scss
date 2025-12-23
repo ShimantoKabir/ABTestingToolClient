@@ -1,0 +1,157 @@
+/* app/home.scss */
+@import "./variables.scss"; // Assuming you have variables
+
+.home-container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  overflow-x: hidden;
+
+  // --- Left Side (Hero/Branding) ---
+  .hero-side {
+    display: none; // Hidden on mobile by default
+    background: linear-gradient(135deg, #32004e 0%, #4a148c 100%);
+    position: relative;
+    overflow: hidden;
+    color: white;
+
+    @media screen and (min-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 45%; // Left side takes ~45% width
+    }
+
+    // The abstract "Swoosh" effect
+    &::before {
+      content: "";
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 60%
+      );
+      transform: rotate(15deg);
+      pointer-events: none;
+    }
+
+    // Another swoosh for depth
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, #6a1b9a 0%, transparent 70%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      z-index: 2;
+      text-align: center;
+      padding: 2rem;
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+      }
+    }
+
+    .brand-logo {
+      position: absolute;
+      bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      z-index: 2;
+    }
+  }
+
+  // --- Right Side (Form) ---
+  .form-side {
+    width: 100%;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    @media screen and (min-width: 768px) {
+      width: 55%; // Right side takes rest
+    }
+
+    .form-wrapper {
+      width: 100%;
+      max-width: 450px; // Constraint width like the image
+
+      h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+
+      .sub-text {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+
+        a {
+          color: #6200ea; // Bright purple link
+          text-decoration: none;
+          font-weight: 600;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      // Override PrimeReact input styles to match image (cleaner look)
+      .p-inputtext {
+        width: 100%;
+        padding: 0.75rem;
+      }
+
+      .p-password {
+        width: 100%;
+        display: inline-block;
+
+        .p-inputtext {
+          width: 100%;
+        }
+      }
+
+      .btn-primary {
+        background-color: #6200ea; // The specific purple from image
+        border: none;
+        padding: 0.8rem;
+        font-weight: 600;
+
+        &:hover {
+          background-color: #5000c2;
+        }
+      }
+
+      .btn-google {
+        background-color: white;
+        color: #333;
+        border: 1px solid #ddd;
+        margin-top: 1rem;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,6 @@
+import { jwtDecode } from "jwt-decode";
 import { CookieService } from "./CookieService";
+import { JwtLoginInfoDto } from "./dtos/jwt-login-info.dto";
 
 export class CookieServiceImp implements CookieService {
   getCookie = (name: string): string | null => {
@@ -27,5 +29,31 @@ export class CookieServiceImp implements CookieService {
   deleteCookie = (name: string): boolean => {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     return true;
+  };
+
+  getJwtLoginInfo = (): JwtLoginInfoDto | null => {
+    const tokenString = this.getCookie("access-token");
+
+    if (!tokenString) {
+      return null;
+    }
+
+    try {
+      // Decode the raw token object
+      const decoded = jwtDecode<JwtLoginInfoDto>(tokenString);
+
+      // Map to Class Instance
+      const loginInfo = new JwtLoginInfoDto();
+      loginInfo.sub = decoded.sub;
+      loginInfo.userId = decoded.userId;
+      loginInfo.orgs = decoded.orgs;
+      loginInfo.projects = decoded.projects;
+      loginInfo.exp = decoded.exp;
+
+      return loginInfo;
+    } catch (error) {
+      console.error("Error decoding access token:", error);
+      return null;
+    }
   };
 }

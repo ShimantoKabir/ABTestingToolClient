@@ -32,7 +32,7 @@ const LeftMenu = () => {
   useEffect(() => {
     setLoading(true);
     menuService
-      .getMenuNodes()
+      .getMenuTree()
       .then((data: TreeNode[] | ErrorResponseDto) => {
         if (data instanceof ErrorResponseDto) {
           toast.current?.show({

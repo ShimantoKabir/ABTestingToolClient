@@ -3,6 +3,7 @@ import { TreeNode } from "primereact/treenode";
 
 export interface MenuService {
   getMenuNodes: () => Promise<TreeNode[] | ErrorResponseDto>;
+  getMenuTree: () => Promise<TreeNode[] | ErrorResponseDto>;
 }
 
 export const MenuServiceToken = Symbol("MenuService");

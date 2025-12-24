@@ -84,7 +84,6 @@ export default function Home() {
 
   const onRegister = async () => {
     if (!validateForm()) return;
-    setOtpAppearance(true);
 
     setLoading(true);
 

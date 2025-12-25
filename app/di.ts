@@ -24,6 +24,16 @@ import {
   OrganizationServiceToken,
 } from "@/app/(auth)/org/services/organization.service";
 import { OrganizationServiceImp } from "@/app/(auth)/org/services/organization-imp.service";
+import {
+  RoleService,
+  RoleServiceToken,
+} from "@/app/(main)/role/services/role.service";
+import { RoleServiceImp } from "@/app/(main)/role/services/role-imp.service";
+import {
+  MenuTemplateService,
+  MenuTemplateServiceToken,
+} from "@/app/(main)/menu-template/services/menu-template.service";
+import { MenuTemplateServiceImp } from "@/app/(main)/menu-template/services/menu-template-imp.service";
 
 const container: Container = new Container();
 
@@ -36,5 +46,9 @@ container.bind<MenuService>(MenuServiceToken).to(MenuServiceImp);
 container
   .bind<OrganizationService>(OrganizationServiceToken)
   .to(OrganizationServiceImp);
+container.bind<RoleService>(RoleServiceToken).to(RoleServiceImp);
+container
+  .bind<MenuTemplateService>(MenuTemplateServiceToken)
+  .to(MenuTemplateServiceImp);
 
 export { container };

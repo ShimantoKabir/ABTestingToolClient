@@ -9,6 +9,12 @@ import {
   CookieServiceToken,
 } from "@/app/utils/cookie/CookieService";
 import { container } from "@/app/di";
+import {
+  ACCESS_TOKEN_COOKIE,
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from "@/app/constants";
 
 const TopMenu = () => {
   const cookieService = container.get<CookieService>(CookieServiceToken);
@@ -27,8 +33,10 @@ const TopMenu = () => {
       label: "Logout",
       icon: "pi pi-sign-out",
       command: () => {
-        cookieService.deleteCookie("access-token");
-        cookieService.deleteCookie("refresh-token");
+        cookieService.deleteCookie(ACCESS_TOKEN_COOKIE);
+        cookieService.deleteCookie(REFRESH_TOKEN_COOKIE);
+        cookieService.deleteCookie(ACTIVE_ORG_POSITION_COOKIE);
+        cookieService.deleteCookie(ACTIVE_PROJECT_POSITION_COOKIE);
         router.push("/login");
       },
     },

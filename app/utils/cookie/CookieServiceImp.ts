@@ -1,6 +1,10 @@
 import { jwtDecode } from "jwt-decode";
 import { CookieService } from "./CookieService";
 import { JwtLoginInfoDto } from "./dtos/jwt-login-info.dto";
+import {
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+} from "@/app/constants";
 
 export class CookieServiceImp implements CookieService {
   getCookie = (name: string): string | null => {
@@ -41,6 +45,10 @@ export class CookieServiceImp implements CookieService {
     try {
       // Decode the raw token object
       const decoded = jwtDecode<JwtLoginInfoDto>(tokenString);
+      const activeOrgPosition = this.getCookie(ACTIVE_ORG_POSITION_COOKIE);
+      const activeProjectPosition = this.getCookie(
+        ACTIVE_PROJECT_POSITION_COOKIE
+      );
 
       // Map to Class Instance
       const loginInfo = new JwtLoginInfoDto();
@@ -49,6 +57,9 @@ export class CookieServiceImp implements CookieService {
       loginInfo.orgs = decoded.orgs;
       loginInfo.projects = decoded.projects;
       loginInfo.exp = decoded.exp;
+      loginInfo.activeOrg = decoded.orgs[parseInt(activeOrgPosition || "0")];
+      loginInfo.activeProject =
+        decoded.projects[parseInt(activeProjectPosition || "0")];
 
       return loginInfo;
     } catch (error) {

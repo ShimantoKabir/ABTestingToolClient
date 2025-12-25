@@ -29,7 +29,7 @@ export class MenuServiceImp implements MenuService {
 
       // Logic: Use the first organization by default.
       // (You can expand this later to support an 'activeOrgId' if needed)
-      const orgId = loginInfo.orgs.length > 0 ? loginInfo.orgs[0].id : 0;
+      const orgId = loginInfo.activeOrg ? loginInfo.activeOrg.id : 0;
 
       if (orgId === 0) {
         return new ErrorResponseDto("No organization assigned to user", 400);
@@ -49,7 +49,7 @@ export class MenuServiceImp implements MenuService {
     }
   };
 
-  getMenuNodes = async (): Promise<TreeNode[] | ErrorResponseDto> => {
+  getMenuJson = async (): Promise<TreeNode[] | ErrorResponseDto> => {
     try {
       const response = await api.get<TreeNode[]>("/static/menu.json");
 

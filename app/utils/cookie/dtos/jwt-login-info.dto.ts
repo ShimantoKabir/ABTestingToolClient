@@ -16,4 +16,6 @@ export class JwtLoginInfoDto {
   orgs: JwtOrgDto[] = [];
   projects: JwtProjectDto[] = [];
   exp: number = 0;
+  activeOrg: JwtOrgDto | null = null;
+  activeProject: JwtProjectDto | null = null;
 }

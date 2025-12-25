@@ -8,6 +8,12 @@ import {
   CookieServiceToken,
 } from "@/app/utils/cookie/CookieService";
 import { container } from "@/app/di";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+} from "@/app/constants";
 
 export class LoginServiceImp implements LoginService {
   cookieService = container.get<CookieService>(CookieServiceToken);
@@ -22,15 +28,18 @@ export class LoginServiceImp implements LoginService {
       );
 
       this.cookieService.setCookie(
-        "access-token",
+        ACCESS_TOKEN_COOKIE,
         response.data.accessToken,
         1
       );
       this.cookieService.setCookie(
-        "refresh-token",
+        REFRESH_TOKEN_COOKIE,
         response.data.refreshToken,
         1
       );
+
+      this.cookieService.setCookie(ACTIVE_ORG_POSITION_COOKIE, "0", 1);
+      this.cookieService.setCookie(ACTIVE_PROJECT_POSITION_COOKIE, "0", 1);
 
       return response.data;
     } catch (error) {

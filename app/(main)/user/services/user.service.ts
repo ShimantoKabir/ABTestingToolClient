@@ -24,6 +24,13 @@ export interface UserService {
     userId: number,
     request: UpdateUserRequestDto
   ) => Promise<UpdateUserResponseDto | ErrorResponseDto>;
+
+  getUser: (id: number) => Promise<UserResponseDto | ErrorResponseDto>;
+
+  getUserDetails: (
+    userId: number,
+    orgId: number
+  ) => Promise<UserResponseDto | ErrorResponseDto>;
 }
 
 export const UserServiceToken = Symbol("UserService");

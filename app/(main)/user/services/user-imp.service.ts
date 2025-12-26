@@ -58,4 +58,28 @@ export class UserServiceImp implements UserService {
       return error as ErrorResponseDto;
     }
   };
+
+  getUser = async (id: number): Promise<UserResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.get<UserResponseDto>(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  getUserDetails = async (
+    userId: number,
+    orgId: number
+  ): Promise<UserResponseDto | ErrorResponseDto> => {
+    try {
+      // NEW ENDPOINT: /{userId}/orgs/{orgId}/details
+      const response = await api.get<UserResponseDto>(
+        `/${userId}/orgs/${orgId}/details`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
 }

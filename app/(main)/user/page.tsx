@@ -143,7 +143,7 @@ export default function UserPage() {
       orgId: 0,
       tree: "",
     });
-    setDisabled(user.disabled);
+    setDisabled(user.disabled ? true : false);
     setEditShowDialog(true);
   };
 

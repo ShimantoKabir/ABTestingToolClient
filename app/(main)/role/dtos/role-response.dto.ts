@@ -1,4 +1,4 @@
-export interface RoleResponseDto {
-  id: number;
-  name: string;
+export class RoleResponseDto {
+  id: number = 0;
+  name: string = "";
 }

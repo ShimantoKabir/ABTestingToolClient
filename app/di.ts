@@ -34,6 +34,16 @@ import {
   MenuTemplateServiceToken,
 } from "@/app/(main)/menu-template/services/menu-template.service";
 import { MenuTemplateServiceImp } from "@/app/(main)/menu-template/services/menu-template-imp.service";
+import {
+  UserService,
+  UserServiceToken,
+} from "@/app/(main)/user/services/user.service";
+import { UserServiceImp } from "@/app/(main)/user/services/user-imp.service";
+import {
+  ProjectService,
+  ProjectServiceToken,
+} from "@/app/(main)/project/services/project.service";
+import { ProjectServiceImp } from "@/app/(main)/project/services/project-imp.service";
 
 const container: Container = new Container();
 
@@ -50,5 +60,7 @@ container.bind<RoleService>(RoleServiceToken).to(RoleServiceImp);
 container
   .bind<MenuTemplateService>(MenuTemplateServiceToken)
   .to(MenuTemplateServiceImp);
+container.bind<UserService>(UserServiceToken).to(UserServiceImp);
+container.bind<ProjectService>(ProjectServiceToken).to(ProjectServiceImp);
 
 export { container };

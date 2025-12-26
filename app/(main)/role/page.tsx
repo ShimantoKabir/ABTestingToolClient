@@ -7,12 +7,11 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 // Updated Imports
 import { RoleResponseDto } from "./dtos/role-response.dto";
 import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
-import { RoleCreateResponseDto } from "./dtos/role-create-response.dto";
+
 // PrimeReact Imports
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
-import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
@@ -112,25 +111,40 @@ export default function Role() {
     }
   };
 
-  const leftToolbarTemplate = () => {
-    return (
-      <div className="flex flex-wrap gap-2">
-        <Button
-          label="New"
-          icon="pi pi-plus"
-          severity="success"
-          onClick={openNew}
-        />
-      </div>
-    );
-  };
-
   const roleDialogFooter = (
     <React.Fragment>
       <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
       <Button label="Save" icon="pi pi-check" onClick={saveRole} />
     </React.Fragment>
   );
+
+  const editAction = () => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          severity="info"
+          aria-label="Update"
+        />
+      </div>
+    );
+  };
+
+  const deleteAction = () => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-trash"
+          rounded
+          text
+          severity="danger"
+          aria-label="Delete"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="grid p-fluid p-4">
@@ -139,7 +153,7 @@ export default function Role() {
 
         <div className="card shadow-2 border-round p-4 surface-card">
           <div className="flex justify-content-between align-items-center mb-4">
-            <h3 className="m-0">Manage Roles</h3>
+            <h2 className="m-0">Manage Roles</h2>
             <Button
               label="New"
               icon="pi pi-plus"
@@ -168,8 +182,14 @@ export default function Role() {
             <Column
               field="name"
               header="Role Name"
-              style={{ width: "90%" }}
+              style={{ width: "70%" }}
             ></Column>
+            <Column header="Edit" body={editAction} style={{ width: "10%" }} />
+            <Column
+              header="Delete"
+              body={deleteAction}
+              style={{ width: "10%" }}
+            />
           </DataTable>
         </div>
 

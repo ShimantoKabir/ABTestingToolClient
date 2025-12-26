@@ -11,10 +11,8 @@ import {
   MenuTemplateServiceToken,
 } from "../menu-template/services/menu-template.service";
 
-// IMPORT ALL 3 DTOs
 import {
   MenuTemplateCreateRequestDto,
-  MenuTemplateCreateResponseDto, // Imported for type checking if needed
   MenuTemplateResponseDto,
 } from "../menu-template/dtos/menu-template.dto";
 
@@ -32,6 +30,7 @@ import { Tree } from "primereact/tree";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { TreeNode } from "primereact/treenode";
+import { Tooltip } from "primereact/tooltip";
 
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
@@ -41,17 +40,18 @@ export default function MenuPage() {
 
   const toast = useRef<Toast>(null);
 
-  // Use ResponseDto for the table
   const [templates, setTemplates] = useState<MenuTemplateResponseDto[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [lazyParams, setLazyParams] = useState({ first: 0, rows: 10, page: 1 });
+  const [lazyParams, setLazyParams] = useState({ first: 0, rows: 5, page: 1 });
 
-  // ... (Dialog State) ...
   const [showDialog, setShowDialog] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<any>(null);
+
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewNodes, setViewNodes] = useState<TreeNode[]>([]);
 
   useEffect(() => {
     loadTemplates();
@@ -123,7 +123,6 @@ export default function MenuPage() {
 
     const cleanTree = recoverTreeFromSelection(treeNodes, selectedKeys);
 
-    // Use RequestDto for creation
     const request = new MenuTemplateCreateRequestDto();
     request.name = templateName;
     request.tree = JSON.stringify(cleanTree);
@@ -137,7 +136,6 @@ export default function MenuPage() {
         detail: res.message,
       });
     } else {
-      // res is now explicitly MenuTemplateCreateResponseDto
       toast.current?.show({
         severity: "success",
         summary: "Success",
@@ -148,13 +146,44 @@ export default function MenuPage() {
     }
   };
 
-  // ... (Renderers match previous code) ...
+  const openViewTree = (rowData: MenuTemplateResponseDto) => {
+    try {
+      const parsedTree = JSON.parse(rowData.tree);
+      const visualNodes = addActionsAsChildren(parsedTree);
+
+      setViewNodes(visualNodes);
+      setViewDialog(true);
+    } catch (e) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to parse tree data",
+      });
+    }
+  };
 
   const indexBodyTemplate = (rowData: MenuTemplateResponseDto, props: any) => {
     return props.rowIndex + 1;
   };
 
-  const actionBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+  const treeBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+    return (
+      <div className="flex align-items-center">
+        <Button
+          icon="pi pi-sitemap"
+          rounded
+          text
+          severity="secondary"
+          aria-label="View Tree"
+          onClick={() => openViewTree(rowData)}
+          tooltip="Visualize Structure"
+          tooltipOptions={{ position: "top" }}
+        />
+      </div>
+    );
+  };
+
+  const editActionBodyTemplate = (rowData: MenuTemplateResponseDto) => {
     return (
       <div className="flex gap-2">
         <Button
@@ -164,6 +193,13 @@ export default function MenuPage() {
           severity="info"
           aria-label="Update"
         />
+      </div>
+    );
+  };
+
+  const deleteActionBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+    return (
+      <div className="flex gap-2">
         <Button
           icon="pi pi-trash"
           rounded
@@ -195,10 +231,12 @@ export default function MenuPage() {
   return (
     <div className="grid p-fluid p-4">
       <Toast ref={toast} />
+      <Tooltip target=".custom-target-icon" />
+
       <div className="col-12">
         <div className="card shadow-2 border-round p-4 surface-card">
           <div className="flex justify-content-between align-items-center mb-4">
-            <h5 className="m-0">Menu Templates</h5>
+            <h2 className="m-0">Menu Templates</h2>
             <Button
               label="New"
               icon="pi pi-plus"
@@ -217,6 +255,7 @@ export default function MenuPage() {
             totalRecords={totalRecords}
             onPage={onPage}
             loading={loading}
+            rowsPerPageOptions={[5, 10, 25]}
             tableStyle={{ minWidth: "50rem" }}
             paginatorClassName="border-none"
           >
@@ -228,26 +267,25 @@ export default function MenuPage() {
             <Column field="name" header="Name" style={{ width: "25%" }} />
             <Column
               field="tree"
-              header="Tree (Raw)"
+              header="Tree"
               style={{ width: "50%" }}
-              body={(rowData: MenuTemplateResponseDto) => (
-                <div
-                  className="white-space-nowrap overflow-hidden text-overflow-ellipsis"
-                  style={{ maxWidth: "300px" }}
-                >
-                  {rowData.tree}
-                </div>
-              )}
+              body={treeBodyTemplate}
             />
             <Column
-              header="Action"
-              body={actionBodyTemplate}
-              style={{ width: "20%" }}
+              header="Edit"
+              body={editActionBodyTemplate}
+              style={{ width: "10%" }}
+            />
+            <Column
+              header="Delete"
+              body={deleteActionBodyTemplate}
+              style={{ width: "10%" }}
             />
           </DataTable>
         </div>
       </div>
 
+      {/* CREATE DIALOG */}
       <Dialog
         header="Create Menu Template"
         visible={showDialog}
@@ -270,8 +308,9 @@ export default function MenuPage() {
 
           <div className="flex flex-column gap-2">
             <label className="font-bold">Select Menus & Actions</label>
+            {/* FIX 1: Removed 'border-1 surface-border' classes */}
             <div
-              className="card border-1 surface-border border-round p-3"
+              className="card border-none p-0"
               style={{ maxHeight: "400px", overflowY: "auto" }}
             >
               <Tree
@@ -282,9 +321,34 @@ export default function MenuPage() {
                 filter
                 filterMode="lenient"
                 filterPlaceholder="Search menu items..."
+                className="w-full border-none p-0"
               />
             </div>
           </div>
+        </div>
+      </Dialog>
+
+      {/* VIEW TREE DIALOG */}
+      <Dialog
+        header="Assigned Menu Structure"
+        visible={viewDialog}
+        style={{ width: "40vw" }}
+        onHide={() => setViewDialog(false)}
+        draggable={false}
+      >
+        <div
+          className="card border-none p-0"
+          style={{ maxHeight: "60vh", overflowY: "auto" }}
+        >
+          <Tree value={viewNodes} className="w-full border-none p-0" />
+        </div>
+        <div className="flex justify-content-end mt-3">
+          <Button
+            label="Close"
+            icon="pi pi-times"
+            text
+            onClick={() => setViewDialog(false)}
+          />
         </div>
       </Dialog>
     </div>

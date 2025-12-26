@@ -1,5 +1,6 @@
 /* app/home.scss */
-@import "./variables.scss"; // Assuming you have variables
+// No hard import needed if variables are global,
+// but ensure your layout loads the theme css.
 
 .home-container {
   min-height: 100vh;
@@ -7,20 +8,33 @@
   display: flex;
   overflow-x: hidden;
 
+  // Use surface-ground for the overall container background if needed
+  background-color: var(--surface-ground);
+
   // --- Left Side (Hero/Branding) ---
   .hero-side {
     display: none; // Hidden on mobile by default
-    background: linear-gradient(135deg, #32004e 0%, #4a148c 100%);
+
+    // UPDATED: Use primary color variables so it matches the active theme (Indigo, Blue, etc.)
+    // We use a linear gradient mixing the primary color with a slightly darker shade/transparency
+    background: linear-gradient(
+      135deg,
+      var(--primary-color) 0%,
+      var(--primary-700, var(--primary-color)) 100%
+    );
+
     position: relative;
     overflow: hidden;
-    color: white;
+
+    // Use the theme's defined text color for contrast on primary backgrounds
+    color: var(--primary-color-text);
 
     @media screen and (min-width: 768px) {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 45%; // Left side takes ~45% width
+      width: 45%;
     }
 
     // The abstract "Swoosh" effect
@@ -33,14 +47,14 @@
       height: 140%;
       background: radial-gradient(
         circle,
-        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 0%,
+        // Increased opacity slightly for visibility on all colors
         transparent 60%
       );
       transform: rotate(15deg);
       pointer-events: none;
     }
 
-    // Another swoosh for depth
     &::after {
       content: "";
       position: absolute;
@@ -48,8 +62,13 @@
       right: -10%;
       width: 80%;
       height: 80%;
-      background: radial-gradient(circle, #6a1b9a 0%, transparent 70%);
-      opacity: 0.4;
+      // Use primary color for the glow
+      background: radial-gradient(
+        circle,
+        var(--primary-500, #ffffff) 0%,
+        transparent 70%
+      );
+      opacity: 0.3;
       pointer-events: none;
     }
 
@@ -81,33 +100,39 @@
   // --- Right Side (Form) ---
   .form-side {
     width: 100%;
-    background-color: #ffffff;
+
+    // UPDATED: Dynamic background for Dark Mode support
+    background-color: var(--surface-card);
+
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
 
     @media screen and (min-width: 768px) {
-      width: 55%; // Right side takes rest
+      width: 55%;
     }
 
     .form-wrapper {
       width: 100%;
-      max-width: 450px; // Constraint width like the image
+      max-width: 450px;
 
       h2 {
         font-size: 1.8rem;
         margin-bottom: 0.5rem;
-        color: #333;
+        // UPDATED: Dynamic text color
+        color: var(--text-color);
       }
 
       .sub-text {
-        color: #666;
+        // UPDATED: Dynamic secondary text color
+        color: var(--text-color-secondary);
         font-size: 0.9rem;
         margin-bottom: 2rem;
 
         a {
-          color: #6200ea; // Bright purple link
+          // UPDATED: Link color matches active theme
+          color: var(--primary-color);
           text-decoration: none;
           font-weight: 600;
           &:hover {
@@ -116,10 +141,11 @@
         }
       }
 
-      // Override PrimeReact input styles to match image (cleaner look)
       .p-inputtext {
         width: 100%;
         padding: 0.75rem;
+        // PrimeReact inputs automatically handle theme colors (bg, border, text)
+        // We just enforce width/padding here.
       }
 
       .p-password {
@@ -131,25 +157,35 @@
         }
       }
 
+      // Login Button
       .btn-primary {
-        background-color: #6200ea; // The specific purple from image
+        // UPDATED: Use theme primary color
+        background-color: var(--primary-color);
+        color: var(--primary-color-text);
         border: none;
         padding: 0.8rem;
         font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
 
         &:hover {
-          background-color: #5000c2;
+          // Darken slightly on hover (if using a variable that supports calculations,
+          // otherwise just standard opacity change or a known variable)
+          filter: brightness(0.9);
         }
       }
 
+      // Google/Secondary Button
       .btn-google {
-        background-color: white;
-        color: #333;
-        border: 1px solid #ddd;
+        // UPDATED: Adapt to Dark Mode surfaces
+        background-color: var(--surface-ground);
+        color: var(--text-color);
+        border: 1px solid var(--surface-border);
         margin-top: 1rem;
+        transition: background-color 0.2s;
 
         &:hover {
-          background-color: #f8f9fa;
+          background-color: var(--surface-hover);
         }
       }
     }

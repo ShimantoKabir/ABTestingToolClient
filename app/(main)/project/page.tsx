@@ -158,7 +158,7 @@ export default function ProjectPage() {
       <div className="col-12">
         <div className="card shadow-2 border-round p-4 surface-card">
           <div className="flex justify-content-between align-items-center mb-4">
-            <h5 className="m-0">Projects</h5>
+            <h2 className="m-0">Projects</h2>
             <Button
               label="New"
               icon="pi pi-plus"

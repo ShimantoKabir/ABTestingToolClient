@@ -12,8 +12,9 @@ import {
   TreeCheckboxSelectionKeys,
   TreeMultipleSelectionKeys,
   TreeNodeClickEvent,
+  TreeSelectionEvent,
 } from "primereact/tree";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { container } from "@/app/di";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
@@ -23,11 +24,35 @@ import { APP_NAME } from "@/app/constants";
 const LeftMenu = () => {
   const menuService = container.get<MenuService>(MenuServiceToken);
   const { isLeftMenuMinimized } = useMenuStore();
+
   const [nodes, setNodes] = useState<TreeNode[]>([]);
-  const [expandedKeys, setExpandedKeys] = useState({});
+  const [expandedKeys, setExpandedKeys] = useState<any>({});
+  // 1. New State to control selection persistence
+  const [selectedKey, setSelectedKey] = useState<
+    string | TreeMultipleSelectionKeys | TreeCheckboxSelectionKeys | null
+  >(null);
   const [loading, setLoading] = useState<boolean>(true);
+
   const router = useRouter();
+  const pathname = usePathname(); // Get current URL path
   const toast = useRef<Toast>(null);
+
+  // Helper: Find node key by href (recursively)
+  const findNodeKeyByHref = (
+    nodes: TreeNode[],
+    href: string
+  ): string | null => {
+    for (const node of nodes) {
+      if (node.data?.href === href) {
+        return node.key as string;
+      }
+      if (node.children) {
+        const found = findNodeKeyByHref(node.children, href);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -49,6 +74,16 @@ const LeftMenu = () => {
       });
   }, []);
 
+  // 2. Effect: Sync selection with URL pathname whenever nodes load or URL changes
+  useEffect(() => {
+    if (nodes.length > 0 && pathname) {
+      const activeKey = findNodeKeyByHref(nodes, pathname);
+      if (activeKey) {
+        setSelectedKey(activeKey);
+      }
+    }
+  }, [pathname, nodes]);
+
   const findSelectedNode = (
     tree: TreeNode[],
     key: string | TreeMultipleSelectionKeys | TreeCheckboxSelectionKeys | null
@@ -61,51 +96,58 @@ const LeftMenu = () => {
           node.children,
           key
         );
-
         if (found) return found;
       }
     }
     return undefined;
   };
 
-  const onSingleExpand = (
-    e: string | TreeMultipleSelectionKeys | TreeCheckboxSelectionKeys | null
-  ) => {
-    const selectedNode: TreeNode | undefined = findSelectedNode(nodes, e);
+  // Handle Expanding/Collapsing AND Selecting
+  const onSelectionChange = (e: TreeSelectionEvent) => {
+    // Update the selection state immediately
+    setSelectedKey(e.value);
 
+    // Existing expansion logic
+    const selectedNode: TreeNode | undefined = findSelectedNode(nodes, e.value);
     if (selectedNode) {
       const expandState: boolean = !selectedNode.expanded;
       selectedNode.expanded = expandState;
       setExpandedKeys({
-        e: expandState,
+        ...expandedKeys,
+        [selectedNode.key as string]: expandState,
       });
     }
   };
 
   const onNodeClick = (e: TreeNodeClickEvent) => {
-    e.node.data && e.node.data.href && router.push(e.node.data.href);
+    if (e.node.data && e.node.data.href) {
+      router.push(e.node.data.href);
+    }
   };
 
   return (
     <div className={isLeftMenuMinimized ? "hide left-menu" : "left-menu"}>
       <Toast ref={toast} />
       <div className="logo">
-        <h1>{APP_NAME}</h1>
+        <i className="pi pi-box" style={{ fontSize: "1.5rem" }}></i>
+        <h4 className="text-900 font-bold">{APP_NAME}</h4>
       </div>
       <div className="menu-container">
         {loading ? (
           <div className="loader-container">
-            <ProgressSpinner strokeWidth="4" fill="var(--surface-ground)" />
+            <ProgressSpinner strokeWidth="4" fill="transparent" />
           </div>
         ) : (
           <Tree
             value={nodes}
             selectionMode="single"
             className="w-full menu-wrap"
+            // 3. Controlled Props
             expandedKeys={expandedKeys}
+            selectionKeys={selectedKey}
             onToggle={(e) => setExpandedKeys(e.value)}
-            onSelectionChange={(e) => onSingleExpand(e.value)}
-            onNodeClick={(e) => onNodeClick(e)}
+            onSelectionChange={onSelectionChange}
+            onNodeClick={onNodeClick}
           />
         )}
       </div>

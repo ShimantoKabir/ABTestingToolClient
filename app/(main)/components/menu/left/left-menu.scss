@@ -6,11 +6,17 @@ div.left-menu {
   color: var(--text-color);
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 
+  // NEW: Use Flexbox to push footer to bottom
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
   > div.logo {
     height: 5rem;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0; // Prevent shrinking
 
     > i {
       margin-right: 10px;
@@ -25,13 +31,14 @@ div.left-menu {
 
   > div.menu-container {
     padding-top: 1rem;
+    flex-grow: 1; // Take up remaining space
+    overflow-y: auto; // Scroll if menu is long
 
     > div.menu-wrap {
       background-color: transparent;
       border: none;
       padding: 0;
 
-      // Fix: Hide the toggler button globally within this menu
       button.p-tree-toggler {
         display: none !important;
       }
@@ -42,7 +49,7 @@ div.left-menu {
     }
 
     > div.loader-container {
-      height: calc(100vh - 6rem);
+      height: 100%;
       width: 100%;
       display: flex;
       justify-content: center;
@@ -64,6 +71,41 @@ div.left-menu {
     > div.error-message {
       width: 100%;
       margin-bottom: 1rem;
+    }
+  }
+
+  // --- NEW FOOTER SECTION ---
+  > div.menu-footer {
+    padding: 0.3rem 0.5rem;
+    border-top: 1px solid var(--surface-border);
+    background-color: var(
+      --surface-ground
+    ); // Slightly different bg to distinguish
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    .info-box {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .org-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .project-name {
+        font-size: 0.8rem;
+        color: var(--text-color-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 }

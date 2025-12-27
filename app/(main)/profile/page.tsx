@@ -181,7 +181,7 @@ export default function ProfilePage() {
               label={getInitials()}
               size="xlarge"
               shape="circle"
-              className="mb-3 bg-white text-900 border-1 surface-border"
+              className="mb-3 surface-100 text-900 border-1 surface-border"
               style={{ width: "80px", height: "80px", fontSize: "2rem" }}
             />
             <h2 className="m-0 text-900 font-medium mb-1">{user.email}</h2>
@@ -253,13 +253,12 @@ export default function ProfilePage() {
               </li>
             </ul>
 
-            <div className="flex justify-content-between align-items-center mt-5">
+            <div className="flex justify-content-center align-items-center mt-5">
               <Button
-                label="Edit Profile"
                 icon="pi pi-user-edit"
-                text
-                className="p-0"
-                onClick={openEditDialog} // <--- Trigger Dialog
+                label="Edit Profile"
+                raised
+                onClick={openEditDialog}
               />
             </div>
           </div>

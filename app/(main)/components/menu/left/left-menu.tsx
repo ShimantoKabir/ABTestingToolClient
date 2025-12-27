@@ -20,32 +20,41 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import { Toast } from "primereact/toast";
 import { APP_NAME } from "@/app/constants";
+import { Button } from "primereact/button"; // Import Button
+
+// Import Cookie Service
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
+import { JwtLoginInfoDto } from "@/app/utils/cookie/dtos/jwt-login-info.dto";
 
 const LeftMenu = () => {
   const menuService = container.get<MenuService>(MenuServiceToken);
+  const cookieService = container.get<CookieService>(CookieServiceToken); // Inject CookieService
   const { isLeftMenuMinimized } = useMenuStore();
 
   const [nodes, setNodes] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<any>({});
-  // 1. New State to control selection persistence
   const [selectedKey, setSelectedKey] = useState<
     string | TreeMultipleSelectionKeys | TreeCheckboxSelectionKeys | null
   >(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // State for Active Context
+  const [activeInfo, setActiveInfo] = useState<JwtLoginInfoDto | null>(null);
+
   const router = useRouter();
-  const pathname = usePathname(); // Get current URL path
+  const pathname = usePathname();
   const toast = useRef<Toast>(null);
 
-  // Helper: Find node key by href (recursively)
+  // ... (keep findNodeKeyByHref helper) ...
   const findNodeKeyByHref = (
     nodes: TreeNode[],
     href: string
   ): string | null => {
     for (const node of nodes) {
-      if (node.data?.href === href) {
-        return node.key as string;
-      }
+      if (node.data?.href === href) return node.key as string;
       if (node.children) {
         const found = findNodeKeyByHref(node.children, href);
         if (found) return found;
@@ -55,6 +64,7 @@ const LeftMenu = () => {
   };
 
   useEffect(() => {
+    // 1. Load Menu Tree
     setLoading(true);
     menuService
       .getMenuTree()
@@ -72,25 +82,28 @@ const LeftMenu = () => {
       .finally(() => {
         setLoading(false);
       });
+
+    // 2. Load Active Context Info
+    const info = cookieService.getJwtLoginInfo();
+    setActiveInfo(info);
   }, []);
 
-  // 2. Effect: Sync selection with URL pathname whenever nodes load or URL changes
+  // ... (keep useEffect for pathname syncing) ...
   useEffect(() => {
     if (nodes.length > 0 && pathname) {
       const activeKey = findNodeKeyByHref(nodes, pathname);
-      if (activeKey) {
-        setSelectedKey(activeKey);
-      }
+      if (activeKey) setSelectedKey(activeKey);
     }
   }, [pathname, nodes]);
 
+  // ... (keep findSelectedNode & onSelectionChange) ...
   const findSelectedNode = (
     tree: TreeNode[],
-    key: string | TreeMultipleSelectionKeys | TreeCheckboxSelectionKeys | null
+    key: any
   ): TreeNode | undefined => {
+    // (Keep existing logic)
     for (const node of tree) {
       if (node.key === key) return node;
-
       if (node.children) {
         const found: TreeNode | undefined = findSelectedNode(
           node.children,
@@ -102,12 +115,8 @@ const LeftMenu = () => {
     return undefined;
   };
 
-  // Handle Expanding/Collapsing AND Selecting
   const onSelectionChange = (e: TreeSelectionEvent) => {
-    // Update the selection state immediately
     setSelectedKey(e.value);
-
-    // Existing expansion logic
     const selectedNode: TreeNode | undefined = findSelectedNode(nodes, e.value);
     if (selectedNode) {
       const expandState: boolean = !selectedNode.expanded;
@@ -125,13 +134,21 @@ const LeftMenu = () => {
     }
   };
 
+  const onSettingsClick = () => {
+    router.push("/settings");
+  };
+
   return (
     <div className={isLeftMenuMinimized ? "hide left-menu" : "left-menu"}>
       <Toast ref={toast} />
+
+      {/* Header */}
       <div className="logo">
         <i className="pi pi-box" style={{ fontSize: "1.5rem" }}></i>
         <h4 className="text-900 font-bold">{APP_NAME}</h4>
       </div>
+
+      {/* Menu Body */}
       <div className="menu-container">
         {loading ? (
           <div className="loader-container">
@@ -142,7 +159,6 @@ const LeftMenu = () => {
             value={nodes}
             selectionMode="single"
             className="w-full menu-wrap"
-            // 3. Controlled Props
             expandedKeys={expandedKeys}
             selectionKeys={selectedKey}
             onToggle={(e) => setExpandedKeys(e.value)}
@@ -151,6 +167,33 @@ const LeftMenu = () => {
           />
         )}
       </div>
+
+      {/* NEW Footer */}
+      {activeInfo && (
+        <div className="menu-footer">
+          <div className="info-box">
+            <span className="org-name" title={activeInfo.activeOrg?.name}>
+              {activeInfo.activeOrg?.name || "No Organization"}
+            </span>
+            <span
+              className="project-name"
+              title={activeInfo.activeProject?.name}
+            >
+              {activeInfo.activeProject?.name || "No Project Selected"}
+            </span>
+          </div>
+          <Button
+            icon="pi pi-cog"
+            text
+            rounded
+            severity="secondary"
+            aria-label="Settings"
+            onClick={onSettingsClick}
+            tooltip="Switch Context"
+            tooltipOptions={{ position: "top" }}
+          />
+        </div>
+      )}
     </div>
   );
 };

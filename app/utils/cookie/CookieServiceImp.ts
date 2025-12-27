@@ -55,11 +55,12 @@ export class CookieServiceImp implements CookieService {
       loginInfo.sub = decoded.sub;
       loginInfo.userId = decoded.userId;
       loginInfo.orgs = decoded.orgs;
-      loginInfo.projects = decoded.projects;
       loginInfo.exp = decoded.exp;
       loginInfo.activeOrg = decoded.orgs[parseInt(activeOrgPosition || "0")];
       loginInfo.activeProject =
-        decoded.projects[parseInt(activeProjectPosition || "0")];
+        decoded.orgs[parseInt(activeOrgPosition || "0")].projects[
+          parseInt(activeProjectPosition || "0")
+        ];
 
       return loginInfo;
     } catch (error) {

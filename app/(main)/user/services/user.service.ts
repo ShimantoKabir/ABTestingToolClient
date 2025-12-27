@@ -5,6 +5,10 @@ import {
   UpdateUserResponseDto,
   UserResponseDto,
 } from "../dtos/user.dto";
+import {
+  UserJoinOrgRequestDto,
+  UserJoinOrgResponseDto,
+} from "@/app/(auth)/org/join/dtos/join-org.dto";
 
 export interface UserService {
   /**
@@ -31,6 +35,10 @@ export interface UserService {
     userId: number,
     orgId: number
   ) => Promise<UserResponseDto | ErrorResponseDto>;
+
+  joinOrganization: (
+    req: UserJoinOrgRequestDto
+  ) => Promise<UserJoinOrgResponseDto | ErrorResponseDto>;
 }
 
 export const UserServiceToken = Symbol("UserService");

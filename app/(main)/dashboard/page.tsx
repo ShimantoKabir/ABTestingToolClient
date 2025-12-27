@@ -105,8 +105,8 @@ export default function Dashboard() {
     <div className="w-full p-3 overflow-x-hidden">
       <div className="grid p-fluid">
         {/* ----------------- TOP STATS CARDS ----------------- */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+        <div className="col-12 md:col-6 lg:col-3 border-round-lg">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
@@ -115,7 +115,7 @@ export default function Dashboard() {
                 <div className="text-900 font-medium text-xl">12</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                className="flex align-items-center justify-content-center bg-blue-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-chart-line text-blue-500 text-xl" />
@@ -127,7 +127,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
@@ -136,7 +136,7 @@ export default function Dashboard() {
                 <div className="text-900 font-medium text-xl">45,200</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-orange-100 border-round"
+                className="flex align-items-center justify-content-center bg-orange-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-users text-orange-500 text-xl" />
@@ -148,7 +148,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
@@ -157,7 +157,7 @@ export default function Dashboard() {
                 <div className="text-900 font-medium text-xl">2.1%</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-cyan-100 border-round"
+                className="flex align-items-center justify-content-center bg-cyan-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-percentage text-cyan-500 text-xl" />
@@ -169,7 +169,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
@@ -178,7 +178,7 @@ export default function Dashboard() {
                 <div className="text-900 font-medium text-xl">5</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-purple-100 border-round"
+                className="flex align-items-center justify-content-center bg-purple-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-file-edit text-purple-500 text-xl" />
@@ -190,7 +190,7 @@ export default function Dashboard() {
 
         {/* ----------------- CHARTS ROW ----------------- */}
         <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round p-4 h-full">
+          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
             <div className="flex justify-content-between align-items-center mb-5">
               <h5>Traffic vs Conversions</h5>
               <div>
@@ -209,7 +209,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round p-4 h-full">
+          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
             <div className="flex align-items-center justify-content-between mb-5">
               <h5>Experiment Status</h5>
             </div>

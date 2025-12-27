@@ -37,3 +37,7 @@ h6 {
 div.p-inline-message.hide {
   display: none;
 }
+
+body > nextjs-portal {
+  display: none !important;
+}

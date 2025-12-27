@@ -290,6 +290,7 @@ export default function Registration() {
             disabled={loading}
             header={header}
             footer={footer}
+            inputClassName="pr-5"
           />
           <Message
             ref={passwordMessageRef}

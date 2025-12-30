@@ -1,0 +1,75 @@
+.variations-page {
+  height: 100%;
+
+  // Sidebar List Styles
+  .variation-list {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .variation-item {
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &.active {
+        background-color: var(--primary-color);
+        color: var(--primary-color-text);
+
+        small {
+          color: rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      &:not(.active) {
+        background-color: var(--surface-ground);
+        color: var(--text-color);
+
+        &:hover {
+          background-color: var(--surface-hover);
+          border-color: var(--surface-border);
+        }
+      }
+    }
+  }
+
+  // Code Editor Styling mimicking a simple IDE
+  .code-editor-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .p-panel-header {
+      padding: 0.75rem 1rem;
+      background-color: var(--surface-ground);
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .p-panel-content {
+      padding: 0;
+      flex-grow: 1;
+      height: 100%;
+
+      textarea {
+        font-family: "Menlo", "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        background-color: var(--surface-card);
+        color: var(--text-color);
+        border: none;
+        box-shadow: none !important;
+        padding: 1rem;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+}

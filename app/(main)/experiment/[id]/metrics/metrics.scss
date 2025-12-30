@@ -1,0 +1,40 @@
+.metrics-page {
+  .metrics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  // Style the Metric Type badges in the table
+  .metric-type-badge {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+
+    &.type-click {
+      background-color: var(--blue-100);
+      color: var(--blue-700);
+    }
+
+    &.type-pageview {
+      background-color: var(--teal-100);
+      color: var(--teal-700);
+    }
+
+    &.type-custom {
+      background-color: var(--purple-100);
+      color: var(--purple-700);
+    }
+  }
+
+  .selector-code {
+    font-family: monospace;
+    background-color: var(--surface-ground);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    color: var(--primary-color);
+  }
+}

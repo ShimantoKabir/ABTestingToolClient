@@ -1,0 +1,27 @@
+.experiments-list-page {
+  // Ensure the table takes up available space nicely
+  .p-datatable-wrapper {
+    scrollbar-width: thin;
+  }
+
+  // Custom styling for the clickable rows
+  .p-datatable-tbody > tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--surface-hover) !important;
+    }
+  }
+
+  // Status Tag customization
+  .p-tag {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+
+  // Center align content in action column if needed
+  .vertical-align-middle {
+    vertical-align: middle;
+  }
+}

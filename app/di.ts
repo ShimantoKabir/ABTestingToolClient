@@ -44,6 +44,31 @@ import {
   ProjectServiceToken,
 } from "@/app/(main)/project/services/project.service";
 import { ProjectServiceImp } from "@/app/(main)/project/services/project-imp.service";
+import {
+  ExperimentService,
+  ExperimentServiceToken,
+} from "./(main)/experiment/services/experiment.service";
+import { ExperimentServiceImp } from "./(main)/experiment/services/experiment-imp.service";
+import {
+  ConditionService,
+  ConditionServiceToken,
+} from "./(main)/experiment/[id]/condition/services/condition.service";
+import { ConditionServiceImp } from "./(main)/experiment/[id]/condition/services/condition-imp.service";
+import {
+  VariationService,
+  VariationServiceToken,
+} from "./(main)/experiment/[id]/variation/services/variation.service";
+import { VariationServiceImp } from "./(main)/experiment/[id]/variation/services/variation-imp.service";
+import {
+  TrafficService,
+  TrafficServiceToken,
+} from "./(main)/experiment/[id]/traffic/services/traffic.service";
+import { TrafficServiceImp } from "./(main)/experiment/[id]/traffic/services/traffic-imp.service";
+import {
+  MetricsService,
+  MetricsServiceToken,
+} from "./(main)/experiment/[id]/metrics/services/metrics.service";
+import { MetricsServiceImp } from "./(main)/experiment/[id]/metrics/services/metrics-imp.service";
 
 const container: Container = new Container();
 
@@ -62,5 +87,12 @@ container
   .to(MenuTemplateServiceImp);
 container.bind<UserService>(UserServiceToken).to(UserServiceImp);
 container.bind<ProjectService>(ProjectServiceToken).to(ProjectServiceImp);
+container
+  .bind<ExperimentService>(ExperimentServiceToken)
+  .to(ExperimentServiceImp);
+container.bind<ConditionService>(ConditionServiceToken).to(ConditionServiceImp);
+container.bind<VariationService>(VariationServiceToken).to(VariationServiceImp);
+container.bind<TrafficService>(TrafficServiceToken).to(TrafficServiceImp);
+container.bind<MetricsService>(MetricsServiceToken).to(MetricsServiceImp);
 
 export { container };

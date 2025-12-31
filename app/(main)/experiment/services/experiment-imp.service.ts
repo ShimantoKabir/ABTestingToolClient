@@ -12,8 +12,9 @@ import {
 
 @injectable()
 export class ExperimentServiceImp implements ExperimentService {
-  getExperiments = async (
+  getExperimentsByProjectAndOrg = async (
     orgId: number,
+    projectId: number,
     page: number,
     rows: number
   ): Promise<
@@ -22,7 +23,7 @@ export class ExperimentServiceImp implements ExperimentService {
     try {
       const response = await api.post<
         PaginationResponseDto<ExperimentResponseDto>
-      >("/experiments/all", { orgId, page, rows });
+      >("/experiments-by-project-and-org", { orgId, projectId, page, rows });
       return response.data;
     } catch (error) {
       return error as ErrorResponseDto;

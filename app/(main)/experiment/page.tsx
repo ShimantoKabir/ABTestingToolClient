@@ -48,9 +48,11 @@ export default function ExperimentList() {
     setLoading(true);
     const loginInfo = cookieService.getJwtLoginInfo();
     const orgId = loginInfo?.activeOrg?.id || 0;
+    const projectId = loginInfo?.activeProject?.id || 0;
 
-    const res = await experimentService.getExperiments(
+    const res = await experimentService.getExperimentsByProjectAndOrg(
       orgId,
+      projectId,
       lazyParams.page,
       lazyParams.rows
     );

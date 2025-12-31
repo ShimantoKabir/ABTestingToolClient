@@ -32,21 +32,21 @@ export default function Dashboard() {
           data: [650, 590, 800, 810, 960, 1100, 1200],
           fill: false,
           borderColor: documentStyle.getPropertyValue("--blue-500"),
-          tension: 0.4,
+          tension: 0.0,
         },
         {
           label: "Conversions",
           data: [28, 48, 40, 79, 86, 100, 140],
           fill: false,
           borderColor: documentStyle.getPropertyValue("--green-500"),
-          tension: 0.4,
+          tension: 0.0,
         },
       ],
     });
 
     setLineOptions({
       maintainAspectRatio: false,
-      aspectRatio: 0.6,
+      aspectRatio: 0.0,
       plugins: {
         legend: { labels: { color: textColor } },
       },
@@ -112,7 +112,7 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Active Experiments
                 </span>
-                <div className="text-900 font-medium text-xl">12</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-blue-100 border-round-lg"
@@ -121,7 +121,7 @@ export default function Dashboard() {
                 <i className="pi pi-chart-line text-blue-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">2 new </span>
+            <span className="text-green-500 font-medium">0</span>
             <span className="text-500">since last week</span>
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Total Users
                 </span>
-                <div className="text-900 font-medium text-xl">45,200</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-orange-100 border-round-lg"
@@ -142,7 +142,7 @@ export default function Dashboard() {
                 <i className="pi pi-users text-orange-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">%5.4 </span>
+            <span className="text-green-500 font-medium">%0.0 </span>
             <span className="text-500">increase</span>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Conversion Rate
                 </span>
-                <div className="text-900 font-medium text-xl">2.1%</div>
+                <div className="text-900 font-medium text-xl">0.0%</div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-cyan-100 border-round-lg"
@@ -163,7 +163,7 @@ export default function Dashboard() {
                 <i className="pi pi-percentage text-cyan-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">0.3% </span>
+            <span className="text-green-500 font-medium">0.0% </span>
             <span className="text-500">uplift today</span>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Pending Drafts
                 </span>
-                <div className="text-900 font-medium text-xl">5</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-purple-100 border-round-lg"
@@ -218,7 +218,7 @@ export default function Dashboard() {
                 type="doughnut"
                 data={pieData}
                 options={pieOptions}
-                style={{ position: "relative", width: "50%" }}
+                style={{ position: "relative", width: "0%" }}
               />
             </div>
           </div>

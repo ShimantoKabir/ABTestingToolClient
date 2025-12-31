@@ -52,4 +52,17 @@ export class VariationServiceImp implements VariationService {
       return error as ErrorResponseDto;
     }
   };
+
+  deleteVariation = async (
+    id: number
+  ): Promise<VariationResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<VariationResponseDto>(
+        `/variations/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
 }

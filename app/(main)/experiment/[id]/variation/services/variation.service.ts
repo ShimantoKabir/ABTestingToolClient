@@ -19,6 +19,10 @@ export interface VariationService {
     id: number,
     req: VariationUpdateRequestDto
   ) => Promise<VariationResponseDto | ErrorResponseDto>;
+
+  deleteVariation: (
+    id: number
+  ) => Promise<VariationResponseDto | ErrorResponseDto>;
 }
 
 export const VariationServiceToken = Symbol("VariationService");

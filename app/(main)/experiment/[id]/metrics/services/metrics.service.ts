@@ -13,6 +13,8 @@ export interface MetricsService {
     experimentId: number,
     req: MetricsCreateRequestDto
   ) => Promise<MetricsResponseDto | ErrorResponseDto>;
+
+  deleteMetric: (id: number) => Promise<MetricsResponseDto | ErrorResponseDto>;
 }
 
 export const MetricsServiceToken = Symbol("MetricsService");

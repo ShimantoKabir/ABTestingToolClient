@@ -8,8 +8,9 @@ import {
 } from "../dtos/experiment.dto";
 
 export interface ExperimentService {
-  getExperiments: (
+  getExperimentsByProjectAndOrg: (
     orgId: number,
+    projectId: number,
     page: number,
     rows: number
   ) => Promise<PaginationResponseDto<ExperimentResponseDto> | ErrorResponseDto>;

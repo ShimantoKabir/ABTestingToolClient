@@ -1,8 +1,6 @@
 "use client";
-import "./variation.scss";
 import React, { useEffect, useRef, useState } from "react";
 import { container } from "@/app/di";
-// UPDATED IMPORTS
 import {
   VariationService,
   VariationServiceToken,
@@ -21,6 +19,9 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Panel } from "primereact/panel";
+import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
+
+import "./variation.scss";
 
 export default function VariationsPage({ params }: { params: { id: string } }) {
   const expId = parseInt(params.id);
@@ -32,10 +33,20 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
     null
   );
 
+  // Editor State
   const [jsCode, setJsCode] = useState("");
   const [cssCode, setCssCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Layout State
   const [showEditors, setShowEditors] = useState(true);
+
+  // Full Screen State
+  const [expandedEditor, setExpandedEditor] = useState<"js" | "css" | null>(
+    null
+  );
+
+  // New Variation Dialog
   const [showDialog, setShowDialog] = useState(false);
   const [newVarTitle, setNewVarTitle] = useState("");
 
@@ -59,6 +70,12 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
     setCssCode(v.css || "");
   };
 
+  const openCreateDialog = () => {
+    const nextNum = variations.length;
+    setNewVarTitle(`Variation #${nextNum}`);
+    setShowDialog(true);
+  };
+
   const handleCreate = async () => {
     const req = new VariationCreateRequestDto();
     req.title = newVarTitle;
@@ -79,6 +96,38 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
       setShowDialog(false);
       loadVariations();
     }
+  };
+
+  const handleDelete = async (event: React.MouseEvent, id: number) => {
+    event.stopPropagation();
+    confirmPopup({
+      target: event.currentTarget as HTMLElement,
+      message: "Do you want to delete this variation?",
+      icon: "pi pi-info-circle",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        const res = await service.deleteVariation(id);
+        if (res instanceof ErrorResponseDto) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: res.message,
+          });
+        } else {
+          toast.current?.show({
+            severity: "success",
+            summary: "Deleted",
+            detail: "Variation removed",
+          });
+          if (selectedVar?.id === id) {
+            const remaining = variations.filter((v) => v.id !== id);
+            if (remaining.length > 0) selectVariation(remaining[0]);
+            else setSelectedVar(null);
+          }
+          setVariations((prev) => prev.filter((v) => v.id !== id));
+        }
+      },
+    });
   };
 
   const handleSaveCode = async () => {
@@ -108,58 +157,89 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
     setIsSaving(false);
   };
 
+  // HEADER RENDER: Title Left <----> Icon Right
+  const renderHeader = (title: string, type: "js" | "css") => (
+    <div className="flex justify-content-between align-items-center w-full px-1">
+      <span className="font-bold text-lg w-full">{title}</span>
+      <Button
+        icon={`pi ${
+          expandedEditor === type ? "pi-window-minimize" : "pi-window-maximize"
+        }`}
+        rounded
+        text
+        severity="secondary"
+        aria-label={expandedEditor === type ? "Unexpand" : "Expand"}
+        onClick={() => setExpandedEditor(expandedEditor === type ? null : type)}
+        tooltip={expandedEditor === type ? "Exit Full Screen" : "Full Screen"}
+        tooltipOptions={{ position: "left" }}
+      />
+    </div>
+  );
+
   return (
-    <div className="h-full flex flex-column">
+    <div className="variations-page h-full flex flex-column">
       <Toast ref={toast} />
+      <ConfirmPopup />
 
       <Splitter
         style={{ height: "100%" }}
         className="border-none bg-transparent"
       >
+        {/* SIDEBAR */}
         <SplitterPanel
           size={20}
           minSize={15}
           className="surface-card border-round shadow-1 mr-2 flex flex-column overflow-hidden"
         >
-          <div className="p-3 border-bottom-1 surface-border flex justify-content-between align-items-center">
+          <div className="p-3 surface-border border-bottom-1 flex justify-content-between align-items-center">
             <span className="font-bold">Variations</span>
             <Button
               icon="pi pi-plus"
               rounded
               text
-              size="small"
-              onClick={() => setShowDialog(true)}
+              size="large"
+              onClick={openCreateDialog}
             />
           </div>
-          <div className="flex-1 overflow-auto p-2">
+          <div className="flex-1 overflow-auto p-2 variation-list">
             <ul className="list-none p-0 m-0">
               {variations.map((v) => (
                 <li
                   key={v.id}
-                  className={`p-3 mb-2 border-round cursor-pointer transition-colors transition-duration-200 ${
-                    selectedVar?.id === v.id
-                      ? "bg-primary text-white"
-                      : "hover:surface-hover surface-ground"
+                  className={`variation-item ${
+                    selectedVar?.id === v.id ? "active" : ""
                   }`}
                   onClick={() => selectVariation(v)}
                 >
-                  <div className="font-bold">{v.title}</div>
-                  <small
-                    className={
-                      selectedVar?.id === v.id
-                        ? "text-white-alpha-70"
-                        : "text-500"
-                    }
-                  >
-                    ID: {v.id}
-                  </small>
+                  <div className="flex align-items-center justify-content-between w-full">
+                    <div>
+                      <div className="font-bold">{v.title}</div>
+                      <small>ID: {v.id}</small>
+                    </div>
+                    {!v.isControl && (
+                      <Button
+                        icon="pi pi-trash"
+                        rounded
+                        text
+                        severity="contrast"
+                        size="large"
+                        onClick={(e) => handleDelete(e, v.id)}
+                        aria-label="Delete"
+                      />
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         </SplitterPanel>
 
-        <SplitterPanel size={80} className="flex flex-column gap-3 pl-2">
+        {/* MAIN EDITORS */}
+        <SplitterPanel
+          size={80}
+          className="flex flex-column gap-3 pl-2 relative"
+        >
+          {/* Top Bar */}
           <div className="flex justify-content-between align-items-center surface-card p-2 border-round shadow-1">
             <div>
               <Button
@@ -178,34 +258,61 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
             />
           </div>
 
+          {/* Editors Area */}
           {showEditors && (
-            <div className="grid h-15rem flex-shrink-0">
-              <div className="col-6 h-full">
+            <div
+              className="grid h-full flex-grow-1 overflow-hidden pb-1"
+              style={{ minHeight: "300px" }}
+            >
+              {/* JS Editor Panel */}
+              <div
+                className={`col-6 h-full flex flex-column transition-all transition-duration-300 ${
+                  expandedEditor === "js"
+                    ? "fixed top-0 left-0 w-screen h-screen z-5 p-0"
+                    : ""
+                } ${expandedEditor === "css" ? "hidden" : ""}`}
+              >
                 <Panel
-                  header="JavaScript"
-                  className="h-full shadow-1"
-                  pt={{ content: { className: "p-0 h-full" } }}
+                  header={renderHeader("JavaScript", "js")}
+                  className="h-full shadow-1 flex flex-column"
+                  pt={{
+                    title: { className: "w-full" },
+                    header: { className: "p-1 w-full" },
+                    content: { className: "h-full p-1" },
+                    toggleableContent: { className: "h-full" },
+                  }}
                 >
                   <InputTextarea
                     value={jsCode}
                     onChange={(e) => setJsCode(e.target.value)}
-                    className="w-full h-full border-none font-monospace"
-                    style={{ resize: "none" }}
+                    className="w-full h-full border-none font-monospace p-3"
                     placeholder="// Custom JS here..."
                   />
                 </Panel>
               </div>
-              <div className="col-6 h-full">
+
+              {/* CSS Editor Panel */}
+              <div
+                className={`col-6 h-full flex flex-column transition-all transition-duration-300 ${
+                  expandedEditor === "css"
+                    ? "fixed top-0 left-0 w-screen h-screen z-5 p-0"
+                    : ""
+                } ${expandedEditor === "js" ? "hidden" : ""}`}
+              >
                 <Panel
-                  header="CSS"
-                  className="h-full shadow-1"
-                  pt={{ content: { className: "p-0 h-full" } }}
+                  header={renderHeader("CSS", "css")}
+                  className="h-full shadow-1 flex flex-column"
+                  pt={{
+                    title: { className: "w-full" },
+                    header: { className: "p-1 w-full" },
+                    content: { className: "h-full p-1" },
+                    toggleableContent: { className: "h-full" },
+                  }}
                 >
                   <InputTextarea
                     value={cssCode}
                     onChange={(e) => setCssCode(e.target.value)}
-                    className="w-full h-full border-none font-monospace"
-                    style={{ resize: "none" }}
+                    className="w-full h-full border-none font-monospace p-3"
                     placeholder="/* Custom CSS here */"
                   />
                 </Panel>
@@ -213,12 +320,14 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          <div className="flex-1 surface-card border-round shadow-1 p-3 flex align-items-center justify-content-center bg-gray-100">
-            <div className="text-500">
-              <i className="pi pi-desktop text-3xl mb-2 block text-center"></i>
-              Preview Mode (Implementation Pending)
+          {!expandedEditor && (
+            <div className="flex-1 surface-card border-round shadow-1 p-3 flex align-items-center justify-content-center bg-gray-100">
+              <div className="text-500">
+                <i className="pi pi-desktop text-3xl mb-2 block text-center"></i>
+                Preview Mode [Not Implemented!]
+              </div>
             </div>
-          </div>
+          )}
         </SplitterPanel>
       </Splitter>
 
@@ -229,15 +338,18 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
         onHide={() => setShowDialog(false)}
       >
         <div className="pt-4">
-          <span className="p-float-label">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="vtitle" className="font-bold">
+              Variation Name
+            </label>
             <InputText
               id="vtitle"
               value={newVarTitle}
               onChange={(e) => setNewVarTitle(e.target.value)}
               className="w-full"
+              autoFocus
             />
-            <label htmlFor="vtitle">Variation Name</label>
-          </span>
+          </div>
           <div className="mt-4 flex justify-content-end">
             <Button label="Create" icon="pi pi-check" onClick={handleCreate} />
           </div>

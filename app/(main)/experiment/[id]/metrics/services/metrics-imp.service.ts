@@ -27,10 +27,22 @@ export class MetricsServiceImp implements MetricsService {
     req: MetricsCreateRequestDto
   ): Promise<MetricsResponseDto | ErrorResponseDto> => {
     try {
+      // experimentId is in the path, req (body) contains title, custom, selector
       const response = await api.post<MetricsResponseDto>(
         `/experiments/${experimentId}/metrics`,
         req
       );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteMetric = async (
+    id: number
+  ): Promise<MetricsResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<MetricsResponseDto>(`/metrics/${id}`);
       return response.data;
     } catch (error) {
       return error as ErrorResponseDto;

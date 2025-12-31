@@ -5,6 +5,7 @@ export class VariationResponseDto {
   traffic: number = 0;
   js: string | null = "";
   css: string | null = "";
+  isControl: boolean = false;
 }
 
 export class VariationCreateRequestDto {

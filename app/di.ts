@@ -69,6 +69,11 @@ import {
   MetricsServiceToken,
 } from "./(main)/experiment/[id]/metrics/services/metrics.service";
 import { MetricsServiceImp } from "./(main)/experiment/[id]/metrics/services/metrics-imp.service";
+import {
+  ResultsService,
+  ResultsServiceToken,
+} from "./(main)/experiment/[id]/results/services/results.service";
+import { ResultsServiceImp } from "./(main)/experiment/[id]/results/services/results-imp.service";
 
 const container: Container = new Container();
 
@@ -94,5 +99,6 @@ container.bind<ConditionService>(ConditionServiceToken).to(ConditionServiceImp);
 container.bind<VariationService>(VariationServiceToken).to(VariationServiceImp);
 container.bind<TrafficService>(TrafficServiceToken).to(TrafficServiceImp);
 container.bind<MetricsService>(MetricsServiceToken).to(MetricsServiceImp);
+container.bind<ResultsService>(ResultsServiceToken).to(ResultsServiceImp);
 
 export { container };

@@ -28,13 +28,13 @@ export const ExperimentTable: React.FC<ExperimentTableProps> = ({
   const actionBody = (rowData: ExperimentResponseDto) => {
     return (
       <Button
-        icon="pi pi-arrow-right"
+        icon="pi pi-ellipsis-v"
         rounded
         text
         severity="info"
         tooltip="Enter Experiment"
         tooltipOptions={{ position: "top" }}
-        onClick={() => onEnterExperiment(rowData.id)}
+        // onClick={() => onEnterExperiment(rowData.id)}
       />
     );
   };
@@ -50,10 +50,21 @@ export const ExperimentTable: React.FC<ExperimentTableProps> = ({
       totalRecords={totalRecords}
       onPage={onPageChange}
       loading={loading}
+      className="p-datatable-hoverable-rows"
       rowClassName={() => "vertical-align-middle cursor-pointer hover:bg-blue-50"}
       onRowClick={(e) => onEnterExperiment(e.data.id)}
+      pt={{
+        column: {
+          headerCell: {
+            className: 'custom-header-cell-styles',
+            style: {
+              padding: '0.75rem 1.25rem'
+            }
+          }
+        }
+      }}
     >
-      <Column field="title" header="Title" style={{ width: "25%" }} />
+      <Column field="title" header="Title" style={{ width: "25%" }} className="pl-4" />
       <Column field="description" header="Description" />
       <Column
         field="status"
@@ -67,11 +78,12 @@ export const ExperimentTable: React.FC<ExperimentTableProps> = ({
         body={typeBody}
         style={{ width: "15%" }}
       />
-      {/* <Column
+      <Column
         body={actionBody}
         header="Action"
         style={{ width: "5%", textAlign: "center" }}
-      /> */}
+        className="pr-4"
+      />
     </DataTable>
   );
 };

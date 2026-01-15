@@ -56,7 +56,9 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
   const loadMetrics = async () => {
     const res = await service.getMetrics(expId);
     if (!(res instanceof ErrorResponseDto)) {
-      setMetrics(res);
+      // Sort metrics by ID in ascending order
+      const sortedMetrics = res.sort((a, b) => a.id - b.id);
+      setMetrics(sortedMetrics);
     }
   };
 
@@ -232,7 +234,7 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
         />
       </div>
 
-      <DataTable value={metrics}>
+      <DataTable value={metrics} sortField="id" sortOrder={1}>
         <Column field="title" header="Metric Name" style={{ width: "30%" }} />
         <Column header="Type" body={typeBody} style={{ width: "15%" }} />
         <Column

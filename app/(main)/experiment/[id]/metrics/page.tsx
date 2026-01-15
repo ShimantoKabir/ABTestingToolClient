@@ -246,7 +246,7 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
           field="isPrimary"
           header="Primary Metrics"
           body={primaryMetricBody}
-          style={{ width: "15%", textAlign: "center" }}
+          style={{ width: "15%" }}
         /> 
 
         <Column

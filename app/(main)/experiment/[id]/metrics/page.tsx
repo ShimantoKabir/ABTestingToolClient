@@ -50,6 +50,7 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
   const loadMetrics = async () => {
     const res = await service.getMetrics(expId);
     if (!(res instanceof ErrorResponseDto)) {
+      console.log('res:  ', res)
       setMetrics(res);
     }
   };
@@ -145,6 +146,37 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
     );
   };
 
+  const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean; onToggle: () => void }) => {
+    return (
+      <button
+        className={`toggle-switch ${isOn ? 'active' : ''}`}
+        onClick={onToggle}
+        aria-label="Toggle primary metric"
+      >
+        <div className="toggle-slider"></div>
+      </button>
+    );
+  };
+
+  const primaryMetricBody = (rowData: MetricsResponseDto) => {
+    const handleToggle = () => {
+      // For now, just log the toggle action
+      // In the next task, this will be connected to the API
+      console.log(`Toggle primary metric for metric ID ${rowData.id}, current value: ${rowData.isPrimary}`);
+      
+      // For visual demonstration only - this would be handled by API in next task
+      setMetrics(prev => 
+        prev.map(metric => 
+          metric.id === rowData.id 
+            ? { ...metric, isPrimary: !metric.isPrimary }
+            : metric
+        )
+      );
+    };
+
+    return <ToggleSwitch isOn={rowData.isPrimary} onToggle={handleToggle} />;
+  };
+
   const actionBody = (rowData: MetricsResponseDto) => {
     return (
       <Button
@@ -173,25 +205,19 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
       </div>
 
       <DataTable value={metrics}>
-        <Column field="title" header="Metric Name" style={{ width: "20%" }} />
-        <Column header="Type" body={typeBody} style={{ width: "10%" }} />
+        <Column field="title" header="Metric Name" style={{ width: "30%" }} />
+        <Column header="Type" body={typeBody} style={{ width: "15%" }} />
         <Column
           field="selector"
           header="Selector / Event Name"
           style={{ width: "30%" }}
         />
-
-        {/* Added New Columns */}
         <Column
-          field="triggeredOnQA"
-          header="QA Triggered"
+          field="isPrimary"
+          header="Primary Metrics"
+          body={primaryMetricBody}
           style={{ width: "15%", textAlign: "center" }}
-        />
-        <Column
-          field="triggeredOnLIVE"
-          header="Live Triggered"
-          style={{ width: "15%", textAlign: "center" }}
-        />
+        /> 
 
         <Column
           body={actionBody}

@@ -5,6 +5,7 @@ export class MetricsResponseDto {
   custom: boolean = false;
   selector: string | null = null;
   description: string | null = null;
+  isPrimary: boolean = false;
   triggeredOnLIVE: number = 0;
   triggeredOnQA: number = 0;
 }

@@ -221,7 +221,7 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="metrics-page card shadow-2 p-4 surface-card border-round">
+    <div className="metrics-page card shadow-2 p-4 border-round">
       <Toast ref={toast} />
       <ConfirmPopup />
 

@@ -8,8 +8,13 @@ import {
 import {
   MetricsResponseDto,
   MetricsCreateRequestDto,
+  MetricsPrimaryUpdateRequestDto,
 } from "./dtos/metrics.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -26,6 +31,7 @@ import "./metrics.scss";
 export default function MetricsPage({ params }: { params: { id: string } }) {
   const expId = parseInt(params.id);
   const service = container.get<MetricsService>(MetricsServiceToken);
+  const cookieService = container.get<CookieService>(CookieServiceToken);
   const toast = useRef<Toast>(null);
 
   const [metrics, setMetrics] = useState<MetricsResponseDto[]>([]);
@@ -50,7 +56,6 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
   const loadMetrics = async () => {
     const res = await service.getMetrics(expId);
     if (!(res instanceof ErrorResponseDto)) {
-      console.log('res:  ', res)
       setMetrics(res);
     }
   };
@@ -159,19 +164,42 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
   };
 
   const primaryMetricBody = (rowData: MetricsResponseDto) => {
-    const handleToggle = () => {
-      // For now, just log the toggle action
-      // In the next task, this will be connected to the API
-      console.log(`Toggle primary metric for metric ID ${rowData.id}, current value: ${rowData.isPrimary}`);
-      
-      // For visual demonstration only - this would be handled by API in next task
-      setMetrics(prev => 
-        prev.map(metric => 
-          metric.id === rowData.id 
-            ? { ...metric, isPrimary: !metric.isPrimary }
-            : metric
-        )
-      );
+    const handleToggle = async () => {
+      // Only call API if we're setting this metric as primary (not unsetting)
+      if (!rowData.isPrimary) {
+        // Get user email from JWT login info
+        const loginInfo = cookieService.getJwtLoginInfo();
+        const userEmail = loginInfo?.sub;
+
+        if (!userEmail) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Authentication Error",
+            detail: "User email not found. Please log in again.",
+          });
+          return;
+        }
+
+        const req = new MetricsPrimaryUpdateRequestDto();
+        req.email = userEmail;
+
+        const res = await service.updatePrimaryMetric(rowData.id, req);
+        if (res instanceof ErrorResponseDto) {
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: res.message,
+          });
+        } else {
+          toast.current?.show({
+            severity: "success",
+            summary: "Updated",
+            detail: "Primary metric updated successfully",
+          });
+          // Reload metrics to get the updated state
+          loadMetrics();
+        }
+      }
     };
 
     return <ToggleSwitch isOn={rowData.isPrimary} onToggle={handleToggle} />;

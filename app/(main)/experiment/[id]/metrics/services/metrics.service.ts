@@ -2,6 +2,8 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import {
   MetricsCreateRequestDto,
   MetricsResponseDto,
+  MetricsPrimaryUpdateRequestDto,
+  MetricsPrimaryUpdateResponseDto,
 } from "../dtos/metrics.dto";
 
 export interface MetricsService {
@@ -15,6 +17,11 @@ export interface MetricsService {
   ) => Promise<MetricsResponseDto | ErrorResponseDto>;
 
   deleteMetric: (id: number) => Promise<MetricsResponseDto | ErrorResponseDto>;
+
+  updatePrimaryMetric: (
+    id: number,
+    req: MetricsPrimaryUpdateRequestDto
+  ) => Promise<MetricsPrimaryUpdateResponseDto | ErrorResponseDto>;
 }
 
 export const MetricsServiceToken = Symbol("MetricsService");

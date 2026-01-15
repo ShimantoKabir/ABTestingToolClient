@@ -5,6 +5,8 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import {
   MetricsCreateRequestDto,
   MetricsResponseDto,
+  MetricsPrimaryUpdateRequestDto,
+  MetricsPrimaryUpdateResponseDto,
 } from "../dtos/metrics.dto";
 
 @injectable()
@@ -43,6 +45,21 @@ export class MetricsServiceImp implements MetricsService {
   ): Promise<MetricsResponseDto | ErrorResponseDto> => {
     try {
       const response = await api.delete<MetricsResponseDto>(`/metrics/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  updatePrimaryMetric = async (
+    id: number,
+    req: MetricsPrimaryUpdateRequestDto
+  ): Promise<MetricsPrimaryUpdateResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.patch<MetricsPrimaryUpdateResponseDto>(
+        `/metrics/${id}/primary`,
+        req
+      );
       return response.data;
     } catch (error) {
       return error as ErrorResponseDto;

@@ -21,3 +21,17 @@ export class MetricsTrackResponseDto {
   message: string = "";
   triggered: boolean = true;
 }
+
+export class MetricsPrimaryUpdateRequestDto {
+  email: string = "";
+}
+
+export class MetricsPrimaryUpdateResponseDto {
+  id: number = 0;
+  experimentId: number = 0;
+  title: string = "";
+  custom: boolean = true;
+  selector: string = "";
+  description: string = "";
+  isPrimary: boolean = true;
+}

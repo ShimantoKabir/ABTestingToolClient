@@ -27,7 +27,7 @@ export interface ProjectService {
     request: ProjectCreateRequestDto
   ) => Promise<ProjectCreateResponseDto | ErrorResponseDto>;
 
-  getUserProjects: (
+  getUserProjectsByUserIdAndOrgId: (
     userId: number
   ) => Promise<ProjectResponseDto[] | ErrorResponseDto>;
 

@@ -1,54 +1,111 @@
 div.left-menu {
   height: 100vh;
   width: 300px;
-  background-color: lightgray;
+  background-color: var(--surface-card);
+  border-right: 1px solid var(--surface-border);
+  color: var(--text-color);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+  // NEW: Use Flexbox to push footer to bottom
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   > div.logo {
     height: 5rem;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0; // Prevent shrinking
 
-    > h1 {
+    > i {
+      margin-right: 10px;
+    }
+
+    > h3 {
       text-align: center;
+      margin: 0;
+      color: var(--text-color);
     }
   }
 
   > div.menu-container {
+    padding-top: 1rem;
+    flex-grow: 1; // Take up remaining space
+    overflow-y: auto; // Scroll if menu is long
+
     > div.menu-wrap {
       background-color: transparent;
       border: none;
+      padding: 0;
+
+      button.p-tree-toggler {
+        display: none !important;
+      }
+
+      .p-tree-container {
+        padding: 0 1rem;
+      }
     }
 
     > div.loader-container {
-      height: calc(100vh - 5rem);
+      height: 100%;
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
 
-      // Target the PrimeReact ProgressSpinner component globally
-      // :global() allows us to style third-party component classes from our scoped styles
       :global(.p-progress-spinner) {
-        // Set the spinner container width to 35 pixels
         width: 35px !important;
-        // Set the spinner container height to 35 pixels
-        // !important overrides PrimeReact's default sizing
         height: 35px !important;
       }
 
-      // Target the SVG element inside the ProgressSpinner
       :global(.p-progress-spinner svg) {
-        // Control the rotation animation speed of the spinner
-        // 0.5s means the spinner completes one full rotation in 0.5 seconds
-        // Lower value = faster spinning, higher value = slower spinning
         animation-duration: 0.5s;
+        circle {
+          stroke: var(--primary-color);
+        }
       }
     }
 
     > div.error-message {
       width: 100%;
       margin-bottom: 1rem;
+    }
+  }
+
+  // --- NEW FOOTER SECTION ---
+  > div.menu-footer {
+    padding: 0.3rem 0.5rem;
+    border-top: 1px solid var(--surface-border);
+    background-color: var(
+      --surface-ground
+    ); // Slightly different bg to distinguish
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    .info-box {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .org-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .project-name {
+        font-size: 0.8rem;
+        color: var(--text-color-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
 }

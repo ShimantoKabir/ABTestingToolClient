@@ -1,29 +1,34 @@
-// Response when fetching a list or single user
 export class UserResponseDto {
   id: number = 0;
   email: string = "";
-  firstName?: string = "";
-  lastName?: string = "";
-
-  // These fields are necessary to populate the Edit Modal
-  roleId: number | null = null;
-  roleName?: string = "";
-
-  menuTemplateId: number | null = null;
-  menuTemplateName?: string = "";
-
   verified: boolean = false;
-  disabled: boolean = false;
-  super: boolean = false;
+  firstName: string = "";
+  lastName: string = "";
+  contactNumber: string = "";
+
+  disabled: boolean | null = null;
+  super: boolean | null = null;
+  roleId: number | null = null;
+  menuTemplateId: number | null = null;
+  roleName: string | null = null;
+  menuTemplateName: string | null = null;
 }
 
-// Request body for PATCH update
 export class UpdateUserRequestDto {
-  roleId: number | null = null;
-  menuTemplateId: number | null = null;
-  disabled: boolean = false;
+  disabled?: boolean | null;
+  super?: boolean | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  contactNumber?: string | null;
+  roleId?: number | null;
+  menuTemplateId?: number | null;
 }
 
 export class UpdateUserResponseDto {
-  success: boolean = true;
+  id: number = 0;
+  firstName: string = "";
+  lastName: string = "";
+  contactNumber: string = "";
+  disabled: boolean | null = null;
+  super: boolean | null = null;
 }

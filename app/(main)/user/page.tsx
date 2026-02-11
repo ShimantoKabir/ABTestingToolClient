@@ -143,7 +143,7 @@ export default function UserPage() {
       orgId: 0,
       tree: "",
     });
-    setDisabled(user.disabled);
+    setDisabled(user.disabled ? true : false);
     setEditShowDialog(true);
   };
 
@@ -189,7 +189,7 @@ export default function UserPage() {
     setSelectedProjectId(null);
     setUserProjects([]);
 
-    const res = await projectService.getUserProjects(user.id);
+    const res = await projectService.getUserProjectsByUserIdAndOrgId(user.id);
     if (res instanceof ErrorResponseDto) {
       toast.current?.show({
         severity: "error",
@@ -225,7 +225,9 @@ export default function UserPage() {
         summary: "Success",
         detail: "Project assigned",
       });
-      const updatedList = await projectService.getUserProjects(projectUser.id);
+      const updatedList = await projectService.getUserProjectsByUserIdAndOrgId(
+        projectUser.id
+      );
       if (!(updatedList instanceof ErrorResponseDto)) {
         setUserProjects(updatedList);
       }

@@ -1,0 +1,57 @@
+.metrics-page {
+  // Metric Type Badges
+  .metric-type-badge {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+
+    &.type-click {
+      background-color: var(--blue-100);
+      color: var(--blue-700);
+    }
+
+    &.type-custom {
+      background-color: var(--purple-100);
+      color: var(--purple-700);
+    }
+  }
+
+  // Toggle Switch Styles
+  .toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background-color: #d1d5db;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: none;
+    outline: none;
+
+    &.active {
+      background-color: #10b981;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &.active .toggle-slider {
+      transform: translateX(24px);
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}

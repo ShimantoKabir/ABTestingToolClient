@@ -1,0 +1,52 @@
+.traffic-page {
+  .traffic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    .total-indicator {
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background-color: var(--surface-ground);
+      border: 1px solid var(--surface-border);
+
+      &.valid {
+        color: var(--green-500);
+        border-color: var(--green-500);
+      }
+
+      &.invalid {
+        color: var(--red-500);
+        border-color: var(--red-500);
+      }
+    }
+  }
+
+  .progress-container {
+    margin-bottom: 2rem;
+
+    .p-progressbar {
+      height: 1.5rem;
+      border-radius: 1rem;
+
+      .p-progressbar-value {
+        transition: width 0.5s ease-in-out;
+      }
+    }
+  }
+
+  .p-datatable {
+    .p-inputnumber-input {
+      width: 80px;
+      text-align: center;
+    }
+
+    // Highlight rows with high traffic
+    .row-high-traffic {
+      background-color: rgba(var(--primary-color-rgb), 0.05);
+    }
+  }
+}

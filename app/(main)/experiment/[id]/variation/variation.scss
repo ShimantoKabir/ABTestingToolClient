@@ -1,0 +1,81 @@
+.variations-page {
+  height: 100%;
+
+  // Sidebar List
+  .variation-list {
+    .variation-item {
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+
+      &.active {
+        background-color: var(--primary-color);
+        color: var(--primary-color-text);
+        small {
+          color: rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      &:not(.active) {
+        background-color: var(--surface-ground);
+        color: var(--text-color);
+        &:hover {
+          background-color: var(--surface-hover);
+          border-color: var(--surface-border);
+        }
+      }
+    }
+  }
+
+  // Code Editor Panels
+  .code-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .p-panel-header {
+      background-color: var(--surface-ground);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 0.75rem 1rem;
+      flex-shrink: 0;
+    }
+
+    .p-panel-content {
+      display: flex; // Enable Flexbox
+      flex-direction: column;
+      flex-grow: 1; // Grow to fill panel
+      padding: 0;
+      overflow: hidden;
+
+      // Target the textarea wrapper directly
+      textarea.p-inputtextarea {
+        flex-grow: 1; // Grow to fill content area
+        height: 100% !important;
+        width: 100%;
+        font-family: "Menlo", "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        background-color: var(--surface-card);
+        color: var(--text-color);
+        border: none;
+        box-shadow: none !important;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+
+  // Full Screen Z-Index
+  .z-5 {
+    z-index: 1000 !important;
+    background-color: var(--surface-ground);
+    .p-panel {
+      height: 100vh;
+    }
+  }
+}

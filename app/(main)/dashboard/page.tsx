@@ -32,21 +32,21 @@ export default function Dashboard() {
           data: [650, 590, 800, 810, 960, 1100, 1200],
           fill: false,
           borderColor: documentStyle.getPropertyValue("--blue-500"),
-          tension: 0.4,
+          tension: 0.0,
         },
         {
           label: "Conversions",
           data: [28, 48, 40, 79, 86, 100, 140],
           fill: false,
           borderColor: documentStyle.getPropertyValue("--green-500"),
-          tension: 0.4,
+          tension: 0.0,
         },
       ],
     });
 
     setLineOptions({
       maintainAspectRatio: false,
-      aspectRatio: 0.6,
+      aspectRatio: 0.0,
       plugins: {
         legend: { labels: { color: textColor } },
       },
@@ -105,80 +105,80 @@ export default function Dashboard() {
     <div className="w-full p-3 overflow-x-hidden">
       <div className="grid p-fluid">
         {/* ----------------- TOP STATS CARDS ----------------- */}
-        <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+        <div className="col-12 md:col-6 lg:col-3 border-round-lg">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
                   Active Experiments
                 </span>
-                <div className="text-900 font-medium text-xl">12</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                className="flex align-items-center justify-content-center bg-blue-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-chart-line text-blue-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">2 new </span>
+            <span className="text-green-500 font-medium">0</span>
             <span className="text-500">since last week</span>
           </div>
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
                   Total Users
                 </span>
-                <div className="text-900 font-medium text-xl">45,200</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-orange-100 border-round"
+                className="flex align-items-center justify-content-center bg-orange-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-users text-orange-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">%5.4 </span>
+            <span className="text-green-500 font-medium">%0.0 </span>
             <span className="text-500">increase</span>
           </div>
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
                   Conversion Rate
                 </span>
-                <div className="text-900 font-medium text-xl">2.1%</div>
+                <div className="text-900 font-medium text-xl">0.0%</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-cyan-100 border-round"
+                className="flex align-items-center justify-content-center bg-cyan-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-percentage text-cyan-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">0.3% </span>
+            <span className="text-green-500 font-medium">0.0% </span>
             <span className="text-500">uplift today</span>
           </div>
         </div>
 
         <div className="col-12 md:col-6 lg:col-3">
-          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round-lg h-full">
             <div className="flex justify-content-between mb-3">
               <div>
                 <span className="block text-500 font-medium mb-3">
                   Pending Drafts
                 </span>
-                <div className="text-900 font-medium text-xl">5</div>
+                <div className="text-900 font-medium text-xl">0</div>
               </div>
               <div
-                className="flex align-items-center justify-content-center bg-purple-100 border-round"
+                className="flex align-items-center justify-content-center bg-purple-100 border-round-lg"
                 style={{ width: "2.5rem", height: "2.5rem" }}
               >
                 <i className="pi pi-file-edit text-purple-500 text-xl" />
@@ -190,7 +190,7 @@ export default function Dashboard() {
 
         {/* ----------------- CHARTS ROW ----------------- */}
         <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round p-4 h-full">
+          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
             <div className="flex justify-content-between align-items-center mb-5">
               <h5>Traffic vs Conversions</h5>
               <div>
@@ -209,7 +209,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round p-4 h-full">
+          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
             <div className="flex align-items-center justify-content-between mb-5">
               <h5>Experiment Status</h5>
             </div>
@@ -218,7 +218,7 @@ export default function Dashboard() {
                 type="doughnut"
                 data={pieData}
                 options={pieOptions}
-                style={{ position: "relative", width: "50%" }}
+                style={{ position: "relative", width: "0%" }}
               />
             </div>
           </div>

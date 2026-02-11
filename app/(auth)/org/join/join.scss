@@ -1,0 +1,23 @@
+div.org-join-page {
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 100vw;
+  min-height: 100vh;
+
+  > div.page-wrap {
+    max-width: 500px;
+    justify-content: center;
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid lightgray;
+    padding: 50px;
+    border-radius: 10px;
+  }
+
+  > div.page-wrap.hide {
+    display: none;
+  }
+}

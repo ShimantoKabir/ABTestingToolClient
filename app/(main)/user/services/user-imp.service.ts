@@ -13,6 +13,10 @@ import {
   UpdateUserResponseDto,
   UserResponseDto,
 } from "../dtos/user.dto";
+import {
+  UserJoinOrgRequestDto,
+  UserJoinOrgResponseDto,
+} from "@/app/(auth)/org/join/dtos/join-org.dto";
 
 @injectable()
 export class UserServiceImp implements UserService {
@@ -52,6 +56,44 @@ export class UserServiceImp implements UserService {
       const response = await api.patch<UpdateUserResponseDto>(
         `/users/${userId}/organization/${orgId}`,
         request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  getUser = async (id: number): Promise<UserResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.get<UserResponseDto>(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  getUserDetails = async (
+    userId: number,
+    orgId: number
+  ): Promise<UserResponseDto | ErrorResponseDto> => {
+    try {
+      // NEW ENDPOINT: /{userId}/orgs/{orgId}/details
+      const response = await api.get<UserResponseDto>(
+        `/${userId}/orgs/${orgId}/details`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  joinOrganization = async (
+    req: UserJoinOrgRequestDto
+  ): Promise<UserJoinOrgResponseDto | ErrorResponseDto> => {
+    try {
+      const response = await api.post<UserJoinOrgResponseDto>(
+        "/users/join-organization",
+        req
       );
       return response.data;
     } catch (error) {

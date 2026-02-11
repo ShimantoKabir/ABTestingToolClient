@@ -61,13 +61,16 @@ export class ProjectServiceImp implements ProjectService {
     }
   };
 
-  getUserProjects = async (
+  getUserProjectsByUserIdAndOrgId = async (
     userId: number
   ): Promise<ProjectResponseDto[] | ErrorResponseDto> => {
     try {
-      // GET /projects/user/{userId}
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+      const orgId = loginInfo?.activeOrg?.id || 0;
+
+      // GET /projects/user/{userId}/org/{orgId}
       const response = await api.get<ProjectResponseDto[]>(
-        `/projects/user/${userId}`
+        `/projects/user/${userId}/org/${orgId}`
       );
       return response.data;
     } catch (error) {

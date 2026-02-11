@@ -1,0 +1,35 @@
+.experiment-layout-header {
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  border-radius: 0 0 6px 6px;
+
+  // Override TabMenu borders to blend with the header
+  .p-tabmenu {
+    .p-tabmenu-nav {
+      border: none;
+      background: transparent;
+
+      .p-tabmenuitem {
+        .p-menuitem-link {
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid transparent;
+          border-radius: 0;
+          margin: 0;
+          box-shadow: none !important;
+          color: var(--text-color-secondary);
+
+          &:hover {
+            border-color: var(--surface-border);
+            color: var(--text-color);
+          }
+        }
+
+        &.p-highlight .p-menuitem-link {
+          border-color: var(--primary-color);
+          color: var(--primary-color);
+        }
+      }
+    }
+  }
+}

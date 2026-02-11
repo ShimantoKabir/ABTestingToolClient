@@ -243,7 +243,7 @@ export default function Home() {
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
                     className={errors.orgName ? "p-invalid" : ""}
-                    placeholder="Acme Corp"
+                    placeholder="Your Company Ltd."
                   />
                   {errors.orgName && (
                     <small className="p-error">{errors.orgName}</small>

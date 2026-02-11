@@ -48,6 +48,7 @@ export default function DeleteRole({
       breakpoints={{ "960px": "75vw", "641px": "90vw" }}
       header="Confirm"
       modal
+      draggable={false}
       footer={dialogFooter}
       onHide={onHide}
     >

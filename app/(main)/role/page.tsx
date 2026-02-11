@@ -281,6 +281,7 @@ export default function Role() {
           breakpoints={{ "960px": "75vw", "641px": "90vw" }}
           header="New Role"
           modal
+          draggable={false}
           className="p-fluid"
           footer={roleDialogFooter}
           onHide={hideDialog}

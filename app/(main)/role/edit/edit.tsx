@@ -69,6 +69,7 @@ export default function EditRole({
       breakpoints={{ "960px": "75vw", "641px": "90vw" }}
       header="Edit Role"
       modal
+      draggable={false}
       className="p-fluid"
       footer={dialogFooter}
       onHide={handleHide}

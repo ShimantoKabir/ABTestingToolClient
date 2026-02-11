@@ -7,7 +7,9 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 // Updated Imports
 import { RoleResponseDto } from "./dtos/role-response.dto";
 import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
+import { RoleUpdateRequestDto } from "./dtos/role-update-request.dto";
 import EditRole from "./edit/edit";
+import DeleteRole from "./delete/delete";
 
 // PrimeReact Imports
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -40,6 +42,10 @@ export default function Role() {
   // Edit Dialog State
   const [editRoleDialog, setEditRoleDialog] = useState<boolean>(false);
   const [selectedRole, setSelectedRole] = useState<RoleResponseDto | null>(null);
+
+  // Delete Dialog State
+  const [deleteRoleDialog, setDeleteRoleDialog] = useState<boolean>(false);
+  const [roleToDelete, setRoleToDelete] = useState<RoleResponseDto | null>(null);
 
   useEffect(() => {
     loadRoles();
@@ -93,6 +99,38 @@ export default function Role() {
     setSelectedRole(null);
   };
 
+  const openDelete = (role: RoleResponseDto) => {
+    setRoleToDelete(role);
+    setDeleteRoleDialog(true);
+  };
+
+  const hideDeleteDialog = () => {
+    setDeleteRoleDialog(false);
+    setRoleToDelete(null);
+  };
+
+  const deleteRole = async (id: number) => {
+    setLoading(true);
+    const response = await roleService.deleteRole(id);
+
+    if (response instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: response.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Role Deleted",
+        life: 3000,
+      });
+      loadRoles();
+    }
+    setLoading(false);
+  };
+
   const saveRole = async () => {
     setSubmitted(true);
 
@@ -136,18 +174,27 @@ export default function Role() {
   const updateRole = async (id: number, name: string) => {
     setLoading(true);
 
-    // TODO: Connect to API when provided
-    // const response = await roleService.updateRole(id, name);
+    const req = new RoleUpdateRequestDto();
+    req.name = name;
+
+    const response = await roleService.updateRole(id, req);
+
+    if (response instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: response.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Role Updated",
+        life: 3000,
+      });
+      loadRoles();
+    }
     
-    // For now, just show success message
-    toast.current?.show({
-      severity: "success",
-      summary: "Successful",
-      detail: "Role Updated",
-      life: 3000,
-    });
-    
-    loadRoles();
     setLoading(false);
   };
 
@@ -166,7 +213,7 @@ export default function Role() {
     );
   };
 
-  const deleteAction = () => {
+  const deleteAction = (role: RoleResponseDto) => {
     return (
       <div className="flex gap-2">
         <Button
@@ -175,6 +222,7 @@ export default function Role() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(role)}
         />
       </div>
     );
@@ -260,6 +308,13 @@ export default function Role() {
           onHide={hideEditDialog}
           onUpdate={updateRole}
           role={selectedRole}
+        />
+
+        <DeleteRole
+          visible={deleteRoleDialog}
+          onHide={hideDeleteDialog}
+          onDelete={deleteRole}
+          role={roleToDelete}
         />
       </div>
     </div>

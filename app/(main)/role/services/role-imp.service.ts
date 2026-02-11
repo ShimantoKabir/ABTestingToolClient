@@ -13,6 +13,7 @@ import { RoleResponseDto } from "../dtos/role-response.dto";
 import { RoleCreateRequestDto } from "../dtos/role-create-request.dto"; // Assuming this maps to your provided class
 import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
 import { RoleCreateResponseDto } from "../dtos/role-create-response.dto";
+import { RoleUpdateRequestDto } from "../dtos/role-update-request.dto";
 
 @injectable()
 export class RoleServiceImp implements RoleService {
@@ -56,6 +57,29 @@ export class RoleServiceImp implements RoleService {
         name: roleCreateRequest.name,
         orgId: orgId,
       });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  updateRole = async (
+    id: number,
+    roleUpdateRequest: RoleUpdateRequestDto
+  ): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.patch<any>(`/roles/${id}`, {
+        name: roleUpdateRequest.name,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteRole = async (id: number): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<any>(`/roles/${id}`);
       return response.data;
     } catch (error) {
       return error as ErrorResponseDto;

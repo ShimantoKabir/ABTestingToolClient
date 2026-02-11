@@ -7,6 +7,7 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 // Updated Imports
 import { RoleResponseDto } from "./dtos/role-response.dto";
 import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
+import EditRole from "./edit/edit";
 
 // PrimeReact Imports
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -35,6 +36,10 @@ export default function Role() {
   const [roleDialog, setRoleDialog] = useState<boolean>(false);
   const [roleName, setRoleName] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
+
+  // Edit Dialog State
+  const [editRoleDialog, setEditRoleDialog] = useState<boolean>(false);
+  const [selectedRole, setSelectedRole] = useState<RoleResponseDto | null>(null);
 
   useEffect(() => {
     loadRoles();
@@ -73,9 +78,19 @@ export default function Role() {
     setRoleDialog(true);
   };
 
+  const openEdit = (role: RoleResponseDto) => {
+    setSelectedRole(role);
+    setEditRoleDialog(true);
+  };
+
   const hideDialog = () => {
     setSubmitted(false);
     setRoleDialog(false);
+  };
+
+  const hideEditDialog = () => {
+    setEditRoleDialog(false);
+    setSelectedRole(null);
   };
 
   const saveRole = async () => {
@@ -118,7 +133,25 @@ export default function Role() {
     </React.Fragment>
   );
 
-  const editAction = () => {
+  const updateRole = async (id: number, name: string) => {
+    setLoading(true);
+
+    // TODO: Connect to API when provided
+    // const response = await roleService.updateRole(id, name);
+    
+    // For now, just show success message
+    toast.current?.show({
+      severity: "success",
+      summary: "Successful",
+      detail: "Role Updated",
+      life: 3000,
+    });
+    
+    loadRoles();
+    setLoading(false);
+  };
+
+  const editAction = (role: RoleResponseDto) => {
     return (
       <div className="flex gap-2">
         <Button
@@ -127,6 +160,7 @@ export default function Role() {
           text
           severity="info"
           aria-label="Update"
+          onClick={() => openEdit(role)}
         />
       </div>
     );
@@ -184,7 +218,7 @@ export default function Role() {
               header="Role Name"
               style={{ width: "70%" }}
             ></Column>
-            <Column header="Edit" body={editAction} style={{ width: "10%" }} />
+            <Column header="Edit" body={editAction} style={{ width: "10%" }}></Column>
             <Column
               header="Delete"
               body={deleteAction}
@@ -220,6 +254,13 @@ export default function Role() {
             )}
           </div>
         </Dialog>
+
+        <EditRole
+          visible={editRoleDialog}
+          onHide={hideEditDialog}
+          onUpdate={updateRole}
+          role={selectedRole}
+        />
       </div>
     </div>
   );

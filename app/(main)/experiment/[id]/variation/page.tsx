@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   VariationService,
@@ -23,14 +23,20 @@ import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 
 import "./variation.scss";
 
-export default function VariationsPage({ params }: { params: { id: string } }) {
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function VariationsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<VariationService>(VariationServiceToken);
   const toast = useRef<Toast>(null);
 
   const [variations, setVariations] = useState<VariationResponseDto[]>([]);
   const [selectedVar, setSelectedVar] = useState<VariationResponseDto | null>(
-    null
+    null,
   );
 
   // Editor State
@@ -43,7 +49,7 @@ export default function VariationsPage({ params }: { params: { id: string } }) {
 
   // Full Screen State
   const [expandedEditor, setExpandedEditor] = useState<"js" | "css" | null>(
-    null
+    null,
   );
 
   // New Variation Dialog

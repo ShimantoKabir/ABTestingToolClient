@@ -18,7 +18,7 @@ COPY . .
 # --- CONFIGURATION ---
 # Set default API URL here. Next.js "bakes" this into the JS at build time.
 # If your backend changes URL, you must rebuild the image.
-ARG NEXT_PUBLIC_API_URL=https://ab-server-115286204440.us-central1.run.app
+ARG NEXT_PUBLIC_API_URL=https://ab-server-live-115286204440.us-central1.run.app
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 # ---------------------
 

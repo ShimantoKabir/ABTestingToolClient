@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   MetricsService,
@@ -28,7 +28,13 @@ import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 
 import "./metrics.scss";
 
-export default function MetricsPage({ params }: { params: { id: string } }) {
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function MetricsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<MetricsService>(MetricsServiceToken);
   const cookieService = container.get<CookieService>(CookieServiceToken);
@@ -153,10 +159,16 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
     );
   };
 
-  const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean; onToggle: () => void }) => {
+  const ToggleSwitch = ({
+    isOn,
+    onToggle,
+  }: {
+    isOn: boolean;
+    onToggle: () => void;
+  }) => {
     return (
       <button
-        className={`toggle-switch ${isOn ? 'active' : ''}`}
+        className={`toggle-switch ${isOn ? "active" : ""}`}
         onClick={onToggle}
         aria-label="Toggle primary metric"
       >
@@ -247,7 +259,7 @@ export default function MetricsPage({ params }: { params: { id: string } }) {
           header="Primary Metrics"
           body={primaryMetricBody}
           style={{ width: "15%" }}
-        /> 
+        />
 
         <Column
           body={actionBody}

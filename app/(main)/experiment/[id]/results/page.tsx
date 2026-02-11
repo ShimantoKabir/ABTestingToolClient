@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
@@ -10,15 +10,10 @@ import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Tag } from "primereact/tag";
 import { Card } from "primereact/card";
 
 import "./results.scss";
-import {
-  ResultsResponseDto,
-  ResultsStatsDto,
-  VariationStatsDto,
-} from "./dtos/results.dto";
+import { ResultsResponseDto, ResultsStatsDto } from "./dtos/results.dto";
 import {
   ResultsService,
   ResultsServiceToken,
@@ -28,15 +23,16 @@ import {
   ExperimentServiceToken,
 } from "../../services/experiment.service";
 
-interface ResultsPageProps {
+interface Props {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function ResultsPage({ params }: ResultsPageProps) {
+export default function ResultsPage(props: Props) {
   const [expId, setExpId] = useState<number>(0);
   const resultsService = container.get<ResultsService>(ResultsServiceToken);
   const experimentService = container.get<ExperimentService>(
-    ExperimentServiceToken
+    ExperimentServiceToken,
   );
   const toast = useRef<Toast>(null);
 
@@ -46,15 +42,16 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [loading, setLoading] = useState(true);
   const [experimentName, setExperimentName] = useState("");
 
+  const params = use(props.params);
+  const propExpId = parseInt(params.id);
+
   useEffect(() => {
     const initParams = async () => {
-      const resolvedParams = await params;
-      const id = parseInt(resolvedParams.id);
-      setExpId(id);
-      loadData(id);
+      setExpId(propExpId);
+      loadData(propExpId);
     };
     initParams();
-  }, [params]);
+  }, [propExpId]);
 
   const loadData = async (experimentId: number) => {
     setLoading(true);
@@ -65,7 +62,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
       if (!(expRes instanceof ErrorResponseDto)) {
         setExperimentName(expRes.title || "");
       }
-      
+
       // 2. Fetch Results Data
       const resultsRes = await resultsService.getResults(experimentId);
       if (!(resultsRes instanceof ErrorResponseDto)) {
@@ -95,9 +92,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
       <div className="header-bar">
         <h2 className="m-0 text-900 font-bold">Results</h2>
-        {experimentName && (
-          <span className="text-500">{experimentName}</span>
-        )}
+        {experimentName && <span className="text-500">{experimentName}</span>}
       </div>
 
       <div className="flex-1 flex flex-column gap-4">
@@ -124,12 +119,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             responsiveLayout="scroll"
             emptyMessage="No results available"
           >
-            <Column
-              field="id"
-              header="ID"
-              style={{ width: "5%" }}
-              sortable
-            />
+            <Column field="id" header="ID" style={{ width: "5%" }} sortable />
           </DataTable>
         </Card>
       </div>

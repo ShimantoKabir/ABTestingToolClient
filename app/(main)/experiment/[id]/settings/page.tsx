@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   ExperimentService,
@@ -18,17 +18,19 @@ import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { Panel } from "primereact/panel";
 
-export default function ExperimentSettingsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function ExperimentSettingsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<ExperimentService>(ExperimentServiceToken);
   const toast = useRef<Toast>(null);
 
   const [experiment, setExperiment] = useState<ExperimentResponseDto | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
 

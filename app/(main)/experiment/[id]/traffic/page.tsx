@@ -1,6 +1,6 @@
 "use client";
 import "./traffic.scss";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 // UPDATED IMPORTS
 import {
@@ -22,11 +22,17 @@ import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { ProgressBar } from "primereact/progressbar";
 
-export default function TrafficPage({ params }: { params: { id: string } }) {
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function TrafficPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const trafficService = container.get<TrafficService>(TrafficServiceToken);
   const variationService = container.get<VariationService>(
-    VariationServiceToken
+    VariationServiceToken,
   );
   const toast = useRef<Toast>(null);
 
@@ -53,7 +59,7 @@ export default function TrafficPage({ params }: { params: { id: string } }) {
   const onTrafficChange = (id: number, val: number | null) => {
     const newValue = val === null ? 0 : val;
     setVariations((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, traffic: newValue } : v))
+      prev.map((v) => (v.id === id ? { ...v, traffic: newValue } : v)),
     );
   };
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { TabMenu } from "primereact/tabmenu";
 import { container } from "@/app/di";
@@ -15,17 +15,18 @@ export default function ExperimentDetailLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const service = container.get<ExperimentService>(ExperimentServiceToken);
 
   const [experiment, setExperiment] = useState<ExperimentResponseDto | null>(
-    null
+    null,
   );
 
-  const expId = parseInt(params.id);
+  const { id } = use(params);
+  const expId = parseInt(id);
 
   useEffect(() => {
     if (expId) {
@@ -71,7 +72,7 @@ export default function ExperimentDetailLayout({
   ];
 
   const activeIndex = items.findIndex((item) =>
-    pathname.includes(item.label.toLowerCase())
+    pathname.includes(item.label.toLowerCase()),
   );
 
   return (

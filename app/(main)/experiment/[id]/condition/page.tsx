@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 
 import {
@@ -38,13 +38,19 @@ interface PendingCondition {
   urls: string[];
 }
 
-export default function ConditionPage({ params }: { params: { id: string } }) {
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default function ConditionPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const conditionService = container.get<ConditionService>(
-    ConditionServiceToken
+    ConditionServiceToken,
   );
   const experimentService = container.get<ExperimentService>(
-    ExperimentServiceToken
+    ExperimentServiceToken,
   );
   const toast = useRef<Toast>(null);
 
@@ -111,10 +117,10 @@ export default function ConditionPage({ params }: { params: { id: string } }) {
   const updatePendingCondition = (
     tempId: string,
     field: keyof PendingCondition,
-    value: any
+    value: any,
   ) => {
     setPendingConditions((prev) =>
-      prev.map((r) => (r.id === tempId ? { ...r, [field]: value } : r))
+      prev.map((r) => (r.id === tempId ? { ...r, [field]: value } : r)),
     );
   };
 
@@ -136,7 +142,7 @@ export default function ConditionPage({ params }: { params: { id: string } }) {
 
     const expRes = await experimentService.updateExperiment(
       expId,
-      expUpdateReq
+      expUpdateReq,
     );
     if (expRes instanceof ErrorResponseDto) {
       toast.current?.show({

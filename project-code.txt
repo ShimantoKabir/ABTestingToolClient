@@ -311,6 +311,12 @@ import {
   CookieServiceToken,
 } from "@/app/utils/cookie/CookieService";
 import { container } from "@/app/di";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+} from "@/app/constants";
 
 export class LoginServiceImp implements LoginService {
   cookieService = container.get<CookieService>(CookieServiceToken);
@@ -325,15 +331,18 @@ export class LoginServiceImp implements LoginService {
       );
 
       this.cookieService.setCookie(
-        "access-token",
+        ACCESS_TOKEN_COOKIE,
         response.data.accessToken,
         1
       );
       this.cookieService.setCookie(
-        "refresh-token",
+        REFRESH_TOKEN_COOKIE,
         response.data.refreshToken,
         1
       );
+
+      this.cookieService.setCookie(ACTIVE_ORG_POSITION_COOKIE, "0", 1);
+      this.cookieService.setCookie(ACTIVE_PROJECT_POSITION_COOKIE, "0", 1);
 
       return response.data;
     } catch (error) {
@@ -1045,7 +1054,7 @@ const LeftMenu = () => {
   useEffect(() => {
     setLoading(true);
     menuService
-      .getMenuNodes()
+      .getMenuTree()
       .then((data: TreeNode[] | ErrorResponseDto) => {
         if (data instanceof ErrorResponseDto) {
           toast.current?.show({
@@ -1165,11 +1174,54 @@ import api from "@/app/network/interceptor";
 import { MenuService } from "./menu.service";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import { TreeNode } from "primereact/treenode";
+import { container } from "@/app/di"; // Import container
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService"; // Import CookieService
 
 const MENU_FETCH_DELAY = 2000; // 2 seconds delay for demo purposes
 
 export class MenuServiceImp implements MenuService {
-  getMenuNodes = async (): Promise<TreeNode[] | ErrorResponseDto> => {
+  // 1. Inject CookieService using Service Locator pattern
+  private cookieService = container.get<CookieService>(CookieServiceToken);
+
+  getMenuTree = async (): Promise<TreeNode[] | ErrorResponseDto> => {
+    try {
+      // 2. Get Login Info from CookieService
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+
+      if (!loginInfo) {
+        return new ErrorResponseDto("User is not authenticated", 401);
+      }
+
+      // 3. Extract Data
+      const userId = loginInfo.userId;
+      const email = loginInfo.sub;
+
+      // Logic: Use the first organization by default.
+      // (You can expand this later to support an 'activeOrgId' if needed)
+      const orgId = loginInfo.activeOrg ? loginInfo.activeOrg.id : 0;
+
+      if (orgId === 0) {
+        return new ErrorResponseDto("No organization assigned to user", 400);
+      }
+
+      // 4. Call API with extracted data
+      const response = await api.get<TreeNode[]>("/menu-templates/tree", {
+        params: {
+          userId: userId,
+          orgId: orgId,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  getMenuJson = async (): Promise<TreeNode[] | ErrorResponseDto> => {
     try {
       const response = await api.get<TreeNode[]>("/static/menu.json");
 
@@ -1189,7 +1241,8 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 import { TreeNode } from "primereact/treenode";
 
 export interface MenuService {
-  getMenuNodes: () => Promise<TreeNode[] | ErrorResponseDto>;
+  getMenuJson: () => Promise<TreeNode[] | ErrorResponseDto>;
+  getMenuTree: () => Promise<TreeNode[] | ErrorResponseDto>;
 }
 
 export const MenuServiceToken = Symbol("MenuService");
@@ -1237,6 +1290,12 @@ import {
   CookieServiceToken,
 } from "@/app/utils/cookie/CookieService";
 import { container } from "@/app/di";
+import {
+  ACCESS_TOKEN_COOKIE,
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from "@/app/constants";
 
 const TopMenu = () => {
   const cookieService = container.get<CookieService>(CookieServiceToken);
@@ -1255,8 +1314,10 @@ const TopMenu = () => {
       label: "Logout",
       icon: "pi pi-sign-out",
       command: () => {
-        cookieService.deleteCookie("access-token");
-        cookieService.deleteCookie("refresh-token");
+        cookieService.deleteCookie(ACCESS_TOKEN_COOKIE);
+        cookieService.deleteCookie(REFRESH_TOKEN_COOKIE);
+        cookieService.deleteCookie(ACTIVE_ORG_POSITION_COOKIE);
+        cookieService.deleteCookie(ACTIVE_PROJECT_POSITION_COOKIE);
         router.push("/login");
       },
     },
@@ -1364,8 +1425,234 @@ export default OtpTimer;
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\dashboard\page.tsx
+"use client";
+import React, { useState, useEffect } from "react";
+import { Chart } from "primereact/chart";
+import { Menu } from "primereact/menu";
+import { Button } from "primereact/button";
+
 export default function Dashboard() {
-  return <div className="dashboard-component">Dashboard</div>;
+  const [lineOptions, setLineOptions] = useState({});
+  const [lineData, setLineData] = useState({});
+  const [pieOptions, setPieOptions] = useState({});
+  const [pieData, setPieData] = useState({});
+  const menuRef = React.useRef<Menu>(null);
+
+  useEffect(() => {
+    initCharts();
+  }, []);
+
+  const initCharts = () => {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue("--text-color");
+    const textColorSecondary = documentStyle.getPropertyValue(
+      "--text-color-secondary"
+    );
+    const surfaceBorder = documentStyle.getPropertyValue("--surface-border");
+
+    // 1. Traffic Overview (Line Chart)
+    setLineData({
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          label: "Total Traffic",
+          data: [650, 590, 800, 810, 960, 1100, 1200],
+          fill: false,
+          borderColor: documentStyle.getPropertyValue("--blue-500"),
+          tension: 0.4,
+        },
+        {
+          label: "Conversions",
+          data: [28, 48, 40, 79, 86, 100, 140],
+          fill: false,
+          borderColor: documentStyle.getPropertyValue("--green-500"),
+          tension: 0.4,
+        },
+      ],
+    });
+
+    setLineOptions({
+      maintainAspectRatio: false,
+      aspectRatio: 0.6,
+      plugins: {
+        legend: { labels: { color: textColor } },
+      },
+      scales: {
+        x: {
+          ticks: { color: textColorSecondary },
+          grid: { color: surfaceBorder },
+        },
+        y: {
+          ticks: { color: textColorSecondary },
+          grid: { color: surfaceBorder },
+        },
+      },
+    });
+
+    // 2. Experiment Status (Pie Chart)
+    setPieData({
+      labels: ["Active", "Draft", "Paused"],
+      datasets: [
+        {
+          data: [2, 1, 1],
+          backgroundColor: [
+            documentStyle.getPropertyValue("--green-400"),
+            documentStyle.getPropertyValue("--yellow-400"),
+            documentStyle.getPropertyValue("--gray-400"),
+          ],
+          hoverBackgroundColor: [
+            documentStyle.getPropertyValue("--green-500"),
+            documentStyle.getPropertyValue("--yellow-500"),
+            documentStyle.getPropertyValue("--gray-500"),
+          ],
+        },
+      ],
+    });
+
+    setPieOptions({
+      plugins: {
+        legend: {
+          labels: {
+            usePointStyle: true,
+            color: textColor,
+          },
+        },
+      },
+    });
+  };
+
+  // Mock Menu Items
+  const menuItems = [
+    { label: "Refresh Data", icon: "pi pi-refresh" },
+    { label: "Export Report", icon: "pi pi-file-export" },
+  ];
+
+  return (
+    // Wrapper with overflow-x-hidden prevents horizontal scrollbars caused by grid negative margins
+    <div className="w-full p-3 overflow-x-hidden">
+      <div className="grid p-fluid">
+        {/* ----------------- TOP STATS CARDS ----------------- */}
+        <div className="col-12 md:col-6 lg:col-3">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+            <div className="flex justify-content-between mb-3">
+              <div>
+                <span className="block text-500 font-medium mb-3">
+                  Active Experiments
+                </span>
+                <div className="text-900 font-medium text-xl">12</div>
+              </div>
+              <div
+                className="flex align-items-center justify-content-center bg-blue-100 border-round"
+                style={{ width: "2.5rem", height: "2.5rem" }}
+              >
+                <i className="pi pi-chart-line text-blue-500 text-xl" />
+              </div>
+            </div>
+            <span className="text-green-500 font-medium">2 new </span>
+            <span className="text-500">since last week</span>
+          </div>
+        </div>
+
+        <div className="col-12 md:col-6 lg:col-3">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+            <div className="flex justify-content-between mb-3">
+              <div>
+                <span className="block text-500 font-medium mb-3">
+                  Total Users
+                </span>
+                <div className="text-900 font-medium text-xl">45,200</div>
+              </div>
+              <div
+                className="flex align-items-center justify-content-center bg-orange-100 border-round"
+                style={{ width: "2.5rem", height: "2.5rem" }}
+              >
+                <i className="pi pi-users text-orange-500 text-xl" />
+              </div>
+            </div>
+            <span className="text-green-500 font-medium">%5.4 </span>
+            <span className="text-500">increase</span>
+          </div>
+        </div>
+
+        <div className="col-12 md:col-6 lg:col-3">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+            <div className="flex justify-content-between mb-3">
+              <div>
+                <span className="block text-500 font-medium mb-3">
+                  Conversion Rate
+                </span>
+                <div className="text-900 font-medium text-xl">2.1%</div>
+              </div>
+              <div
+                className="flex align-items-center justify-content-center bg-cyan-100 border-round"
+                style={{ width: "2.5rem", height: "2.5rem" }}
+              >
+                <i className="pi pi-percentage text-cyan-500 text-xl" />
+              </div>
+            </div>
+            <span className="text-green-500 font-medium">0.3% </span>
+            <span className="text-500">uplift today</span>
+          </div>
+        </div>
+
+        <div className="col-12 md:col-6 lg:col-3">
+          <div className="surface-card shadow-2 p-3 border-1 border-50 border-round h-full">
+            <div className="flex justify-content-between mb-3">
+              <div>
+                <span className="block text-500 font-medium mb-3">
+                  Pending Drafts
+                </span>
+                <div className="text-900 font-medium text-xl">5</div>
+              </div>
+              <div
+                className="flex align-items-center justify-content-center bg-purple-100 border-round"
+                style={{ width: "2.5rem", height: "2.5rem" }}
+              >
+                <i className="pi pi-file-edit text-purple-500 text-xl" />
+              </div>
+            </div>
+            <span className="text-500">Waiting for approval</span>
+          </div>
+        </div>
+
+        {/* ----------------- CHARTS ROW ----------------- */}
+        <div className="col-12 xl:col-6">
+          <div className="surface-card shadow-2 border-round p-4 h-full">
+            <div className="flex justify-content-between align-items-center mb-5">
+              <h5>Traffic vs Conversions</h5>
+              <div>
+                <Menu model={menuItems} popup ref={menuRef} id="popup_menu" />
+                <Button
+                  icon="pi pi-ellipsis-v"
+                  className="p-button-text p-button-plain p-button-rounded"
+                  onClick={(event) => menuRef.current?.toggle(event)}
+                  aria-controls="popup_menu"
+                  aria-haspopup
+                />
+              </div>
+            </div>
+            <Chart type="line" data={lineData} options={lineOptions} />
+          </div>
+        </div>
+
+        <div className="col-12 xl:col-6">
+          <div className="surface-card shadow-2 border-round p-4 h-full">
+            <div className="flex align-items-center justify-content-between mb-5">
+              <h5>Experiment Status</h5>
+            </div>
+            <div className="flex justify-content-center">
+              <Chart
+                type="doughnut"
+                data={pieData}
+                options={pieOptions}
+                style={{ position: "relative", width: "50%" }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 
@@ -1390,30 +1677,601 @@ export default function MainLayout({
 }
 
 
-file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu\manage\page.tsx
-import React from "react";
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\dtos\menu-template.dto.ts
+// 1. For Listing (GET /all)
+export class MenuTemplateResponseDto {
+  id: number = 0;
+  name: string = "";
+  orgId: number = 0;
+  tree: string = ""; // JSON string
+}
 
-export default function Manage() {
-  return <div>Manage</div>;
+// 2. For Request Payload (POST /)
+export class MenuTemplateCreateRequestDto {
+  name: string = "";
+  orgId: number = 0;
+  tree: string = ""; // JSON string
+}
+
+// 3. For Create Response (POST / response)
+export class MenuTemplateCreateResponseDto {
+  id: number = 0;
+  name: string = "";
+  orgId: number = 0;
+  tree: string = "";
 }
 
 
-file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu\page.tsx
-import React from "react";
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\page.tsx
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { container } from "@/app/di";
 
-const Menu = () => {
-  return <div>Menu</div>;
+import {
+  MenuService,
+  MenuServiceToken,
+} from "../components/menu/services/menu.service";
+import {
+  MenuTemplateService,
+  MenuTemplateServiceToken,
+} from "../menu-template/services/menu-template.service";
+
+import {
+  MenuTemplateCreateRequestDto,
+  MenuTemplateResponseDto,
+} from "../menu-template/dtos/menu-template.dto";
+
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import {
+  addActionsAsChildren,
+  recoverTreeFromSelection,
+} from "./utils/menu-tree.utils";
+
+import { DataTable, DataTableStateEvent } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { Tree } from "primereact/tree";
+import { InputText } from "primereact/inputtext";
+import { Toast } from "primereact/toast";
+import { TreeNode } from "primereact/treenode";
+import { Tooltip } from "primereact/tooltip";
+
+export default function MenuPage() {
+  const menuService = container.get<MenuService>(MenuServiceToken);
+  const menuTemplateService = container.get<MenuTemplateService>(
+    MenuTemplateServiceToken
+  );
+
+  const toast = useRef<Toast>(null);
+
+  const [templates, setTemplates] = useState<MenuTemplateResponseDto[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [lazyParams, setLazyParams] = useState({ first: 0, rows: 5, page: 1 });
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<any>(null);
+
+  const [viewDialog, setViewDialog] = useState(false);
+  const [viewNodes, setViewNodes] = useState<TreeNode[]>([]);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [lazyParams]);
+
+  const loadTemplates = async () => {
+    setLoading(true);
+    const res = await menuTemplateService.getMenuTemplates(
+      lazyParams.page,
+      lazyParams.rows
+    );
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      setTemplates(res.items);
+      setTotalRecords(res.total);
+    }
+    setLoading(false);
+  };
+
+  const onPage = (event: DataTableStateEvent) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: (event.page || 0) + 1,
+    });
+  };
+
+  const openNew = async () => {
+    setTemplateName("");
+    setSelectedKeys(null);
+    setShowDialog(true);
+
+    const rawNodes = await menuService.getMenuJson();
+    if (rawNodes instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: rawNodes.message,
+      });
+      return;
+    }
+    const visualNodes = addActionsAsChildren(rawNodes as any[]);
+    setTreeNodes(visualNodes);
+  };
+
+  const saveTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Name is required",
+      });
+      return;
+    }
+    if (!selectedKeys) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Select at least one item",
+      });
+      return;
+    }
+
+    const cleanTree = recoverTreeFromSelection(treeNodes, selectedKeys);
+
+    const request = new MenuTemplateCreateRequestDto();
+    request.name = templateName;
+    request.tree = JSON.stringify(cleanTree);
+
+    const res = await menuTemplateService.createMenuTemplate(request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Menu Template Created",
+      });
+      setShowDialog(false);
+      loadTemplates();
+    }
+  };
+
+  const openViewTree = (rowData: MenuTemplateResponseDto) => {
+    try {
+      const parsedTree = JSON.parse(rowData.tree);
+      const visualNodes = addActionsAsChildren(parsedTree);
+
+      setViewNodes(visualNodes);
+      setViewDialog(true);
+    } catch (e) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to parse tree data",
+      });
+    }
+  };
+
+  const indexBodyTemplate = (rowData: MenuTemplateResponseDto, props: any) => {
+    return props.rowIndex + 1;
+  };
+
+  const treeBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+    return (
+      <div className="flex align-items-center">
+        <Button
+          icon="pi pi-sitemap"
+          rounded
+          text
+          severity="secondary"
+          aria-label="View Tree"
+          onClick={() => openViewTree(rowData)}
+          tooltip="Visualize Structure"
+          tooltipOptions={{ position: "top" }}
+        />
+      </div>
+    );
+  };
+
+  const editActionBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          severity="info"
+          aria-label="Update"
+        />
+      </div>
+    );
+  };
+
+  const deleteActionBodyTemplate = (rowData: MenuTemplateResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-trash"
+          rounded
+          text
+          severity="danger"
+          aria-label="Delete"
+        />
+      </div>
+    );
+  };
+
+  const dialogFooter = (
+    <div>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        onClick={() => setShowDialog(false)}
+        className="p-button-text"
+      />
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        onClick={saveTemplate}
+        autoFocus
+      />
+    </div>
+  );
+
+  return (
+    <div className="grid p-fluid p-4">
+      <Toast ref={toast} />
+      <Tooltip target=".custom-target-icon" />
+
+      <div className="col-12">
+        <div className="card shadow-2 border-round p-4 surface-card">
+          <div className="flex justify-content-between align-items-center mb-4">
+            <h2 className="m-0">Menu Templates</h2>
+            <Button
+              label="New"
+              icon="pi pi-plus"
+              severity="success"
+              className="w-auto"
+              onClick={openNew}
+            />
+          </div>
+
+          <DataTable
+            value={templates}
+            lazy
+            paginator
+            first={lazyParams.first}
+            rows={lazyParams.rows}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            loading={loading}
+            rowsPerPageOptions={[5, 10, 25]}
+            tableStyle={{ minWidth: "50rem" }}
+            paginatorClassName="border-none"
+          >
+            <Column
+              header="SL"
+              body={indexBodyTemplate}
+              style={{ width: "5%" }}
+            />
+            <Column field="name" header="Name" style={{ width: "25%" }} />
+            <Column
+              field="tree"
+              header="Tree"
+              style={{ width: "50%" }}
+              body={treeBodyTemplate}
+            />
+            <Column
+              header="Edit"
+              body={editActionBodyTemplate}
+              style={{ width: "10%" }}
+            />
+            <Column
+              header="Delete"
+              body={deleteActionBodyTemplate}
+              style={{ width: "10%" }}
+            />
+          </DataTable>
+        </div>
+      </div>
+
+      {/* CREATE DIALOG */}
+      <Dialog
+        header="Create Menu Template"
+        visible={showDialog}
+        style={{ width: "50vw" }}
+        footer={dialogFooter}
+        onHide={() => setShowDialog(false)}
+      >
+        <div className="flex flex-column gap-3">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="tplName" className="font-bold">
+              Template Name
+            </label>
+            <InputText
+              id="tplName"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="e.g., Admin Default"
+            />
+          </div>
+
+          <div className="flex flex-column gap-2">
+            <label className="font-bold">Select Menus & Actions</label>
+            {/* FIX 1: Removed 'border-1 surface-border' classes */}
+            <div
+              className="card border-none p-0"
+              style={{ maxHeight: "400px", overflowY: "auto" }}
+            >
+              <Tree
+                value={treeNodes}
+                selectionMode="checkbox"
+                selectionKeys={selectedKeys}
+                onSelectionChange={(e) => setSelectedKeys(e.value)}
+                filter
+                filterMode="lenient"
+                filterPlaceholder="Search menu items..."
+                className="w-full border-none p-0"
+              />
+            </div>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* VIEW TREE DIALOG */}
+      <Dialog
+        header="Assigned Menu Structure"
+        visible={viewDialog}
+        style={{ width: "40vw" }}
+        onHide={() => setViewDialog(false)}
+        draggable={false}
+      >
+        <div
+          className="card border-none p-0"
+          style={{ maxHeight: "60vh", overflowY: "auto" }}
+        >
+          <Tree value={viewNodes} className="w-full border-none p-0" />
+        </div>
+        <div className="flex justify-content-end mt-3">
+          <Button
+            label="Close"
+            icon="pi pi-times"
+            text
+            onClick={() => setViewDialog(false)}
+          />
+        </div>
+      </Dialog>
+    </div>
+  );
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\services\menu-template-imp.service.ts
+import { injectable } from "inversify";
+import api from "@/app/network/interceptor";
+import { MenuTemplateService } from "./menu-template.service";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { container } from "@/app/di";
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  MenuTemplateCreateRequestDto,
+  MenuTemplateCreateResponseDto,
+  MenuTemplateResponseDto,
+} from "../dtos/menu-template.dto";
+
+@injectable()
+export class MenuTemplateServiceImp implements MenuTemplateService {
+  private cookieService = container.get<CookieService>(CookieServiceToken);
+
+  getMenuTemplates = async (
+    page: number,
+    rows: number
+  ): Promise<
+    PaginationResponseDto<MenuTemplateResponseDto> | ErrorResponseDto
+  > => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+      const orgId = loginInfo?.activeOrg?.id || 0;
+
+      const response = await api.post<
+        PaginationResponseDto<MenuTemplateResponseDto>
+      >("/menu-templates/all", {
+        orgId,
+        page,
+        rows,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  createMenuTemplate = async (
+    request: MenuTemplateCreateRequestDto
+  ): Promise<MenuTemplateCreateResponseDto | ErrorResponseDto> => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+
+      // Auto-inject the active Org ID
+      request.orgId = loginInfo?.activeOrg?.id || 0;
+
+      const response = await api.post<MenuTemplateCreateResponseDto>(
+        "/menu-templates/",
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\services\menu-template.service.ts
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  MenuTemplateCreateRequestDto,
+  MenuTemplateCreateResponseDto,
+  MenuTemplateResponseDto,
+} from "../dtos/menu-template.dto";
+
+export interface MenuTemplateService {
+  /**
+   * Fetches a paginated list of created menu templates.
+   */
+  getMenuTemplates: (
+    page: number,
+    rows: number
+  ) => Promise<
+    PaginationResponseDto<MenuTemplateResponseDto> | ErrorResponseDto
+  >;
+
+  /**
+   * Creates a new menu template.
+   * Returns specific CreateResponseDto
+   */
+  createMenuTemplate: (
+    request: MenuTemplateCreateRequestDto
+  ) => Promise<MenuTemplateCreateResponseDto | ErrorResponseDto>;
+}
+
+export const MenuTemplateServiceToken = Symbol("MenuTemplateService");
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\utils\menu-tree.utils.ts
+import { TreeNode } from "primereact/treenode";
+
+// --- TRANSFORM 1: API Data -> UI Tree (Actions become Children) ---
+export const addActionsAsChildren = (nodes: any[]): TreeNode[] => {
+  return nodes.map((node) => {
+    const newNode: TreeNode = { ...node }; // Clone
+    const actionChildren: TreeNode[] = [];
+
+    // 1. Convert string actions to visual child nodes
+    if (newNode.data && Array.isArray(newNode.data.actions)) {
+      newNode.data.actions.forEach((action: string, index: number) => {
+        actionChildren.push({
+          key: `${newNode.key}-act-${index}`, // Unique Key
+          label: action,
+          icon: "pi pi-cog",
+          data: { isAction: true, actionName: action }, // Flag to identify later
+          children: [],
+        });
+      });
+    }
+
+    // 2. Process existing children recursively
+    const realChildren = newNode.children
+      ? addActionsAsChildren(newNode.children)
+      : [];
+
+    // 3. Combine Action Children + Real Children
+    newNode.children = [...actionChildren, ...realChildren];
+
+    // 4. Clear the actions from data (so they don't duplicate visually if the tree renders data)
+    // We will put them back during save.
+    if (newNode.data) {
+      newNode.data = { ...newNode.data, originalActions: newNode.data.actions };
+      delete newNode.data.actions;
+    }
+
+    return newNode;
+  });
 };
 
-export default Menu;
+// --- TRANSFORM 2: UI Selection -> API Payload (Reconstruct Tree) ---
+export const recoverTreeFromSelection = (
+  allUiNodes: TreeNode[],
+  selectedKeys: any
+): any[] => {
+  const result: any[] = [];
 
+  allUiNodes.forEach((uiNode) => {
+    // FIX: Guard clause to ensure key exists
+    const nodeKey = uiNode.key;
+    if (!nodeKey) return;
 
-file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu\template\page.tsx
-import React from "react";
+    // Now safe to use nodeKey as index
+    const isChecked = selectedKeys[nodeKey]?.checked === true;
+    const isPartial = selectedKeys[nodeKey]?.partialChecked === true;
 
-export default function Template() {
-  return <div>Template</div>;
-}
+    // Only process if node is relevant (Checked or Partial)
+    if (isChecked || isPartial) {
+      // 1. Clone the node structure
+      const apiNode: any = {
+        key: nodeKey,
+        label: uiNode.label,
+        icon: uiNode.icon,
+        data: { ...uiNode.data },
+      };
+
+      // Remove internal flags
+      delete apiNode.data.isAction;
+      delete apiNode.data.originalActions;
+
+      // 2. Re-assemble Actions
+      const authorizedActions: string[] = [];
+      const realApiChildren: any[] = [];
+
+      if (uiNode.children) {
+        uiNode.children.forEach((child) => {
+          // FIX: Ensure child key exists too
+          if (child.key) {
+            const childStatus = selectedKeys[child.key];
+            if (childStatus?.checked === true) {
+              if (child.data?.isAction) {
+                authorizedActions.push(child.data.actionName);
+              }
+            }
+          }
+        });
+
+        // Recurse for real children (non-actions)
+        const realUiChildren = uiNode.children.filter((c) => !c.data?.isAction);
+        if (realUiChildren.length > 0) {
+          const recursedChildren = recoverTreeFromSelection(
+            realUiChildren,
+            selectedKeys
+          );
+          realApiChildren.push(...recursedChildren);
+        }
+      }
+
+      // 3. Assign back to API Node
+      if (authorizedActions.length > 0) {
+        apiNode.data.actions = authorizedActions;
+      }
+
+      if (realApiChildren.length > 0) {
+        apiNode.children = realApiChildren;
+      }
+
+      result.push(apiNode);
+    }
+  });
+
+  return result;
+};
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\profile\page.tsx
@@ -1426,20 +2284,1422 @@ export default function Profile() {
 }
 
 
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\dtos\project.dto.ts
+// For listing projects (Response)
+export class ProjectResponseDto {
+  id: number = 0;
+  name: string = "";
+  description: string = "";
+}
+
+// For creating a project (Request)
+export class ProjectCreateRequestDto {
+  name: string = "";
+  description: string = "";
+  orgId: number = 0;
+}
+
+// For creating a project (Response)
+export class ProjectCreateResponseDto {
+  id: number = 0;
+  name: string = "";
+  description?: string = "";
+}
+
+export class ProjectAssignUserRequestDto {
+  userId: number = 0;
+}
+
+export class ProjectAssignUserResponseDto {
+  projectId: number = 0;
+  userId: number = 0;
+  message: string = "";
+}
+
+export class ProjectRemoveUserResponseDto {
+  message: string = "";
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\page.tsx
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { container } from "@/app/di";
+
+// Services
+import {
+  ProjectService,
+  ProjectServiceToken,
+} from "./services/project.service";
+
+// DTOs
+import {
+  ProjectCreateRequestDto,
+  ProjectResponseDto,
+} from "./dtos/project.dto";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+
+// PrimeReact
+import { DataTable, DataTableStateEvent } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Toast } from "primereact/toast";
+
+export default function ProjectPage() {
+  const projectService = container.get<ProjectService>(ProjectServiceToken);
+  const toast = useRef<Toast>(null);
+
+  // --- Table Data State ---
+  const [projects, setProjects] = useState<ProjectResponseDto[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [lazyParams, setLazyParams] = useState({ first: 0, rows: 5, page: 1 });
+
+  // --- Create Dialog State ---
+  const [showDialog, setShowDialog] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    loadProjects();
+  }, [lazyParams]);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    const res = await projectService.getProjects(
+      lazyParams.page,
+      lazyParams.rows
+    );
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      setProjects(res.items);
+      setTotalRecords(res.total);
+    }
+    setLoading(false);
+  };
+
+  const onPage = (event: DataTableStateEvent) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: (event.page || 0) + 1,
+    });
+  };
+
+  const openNew = () => {
+    setName("");
+    setDescription("");
+    setShowDialog(true);
+  };
+
+  const saveProject = async () => {
+    if (!name.trim()) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Project Name is required",
+      });
+      return;
+    }
+
+    const request = new ProjectCreateRequestDto();
+    request.name = name;
+    request.description = description;
+
+    const res = await projectService.createProject(request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project created successfully",
+      });
+      setShowDialog(false);
+      loadProjects(); // Refresh table
+    }
+  };
+
+  // --- Renderers ---
+  const indexBody = (rowData: any, props: any) => props.rowIndex + 1;
+
+  const editBody = (rowData: ProjectResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          severity="info"
+          aria-label="Edit"
+        />
+      </div>
+    );
+  };
+
+  const deleteBody = (rowData: ProjectResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-trash"
+          rounded
+          text
+          severity="danger"
+          aria-label="Delete"
+        />
+      </div>
+    );
+  };
+
+  const dialogFooter = (
+    <div>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        onClick={() => setShowDialog(false)}
+        className="p-button-text"
+      />
+      <Button label="Save" icon="pi pi-check" onClick={saveProject} autoFocus />
+    </div>
+  );
+
+  return (
+    <div className="grid p-fluid p-4">
+      <Toast ref={toast} />
+      <div className="col-12">
+        <div className="card shadow-2 border-round p-4 surface-card">
+          <div className="flex justify-content-between align-items-center mb-4">
+            <h5 className="m-0">Projects</h5>
+            <Button
+              label="New"
+              icon="pi pi-plus"
+              severity="success"
+              className="w-auto"
+              onClick={openNew}
+            />
+          </div>
+
+          <DataTable
+            value={projects}
+            lazy
+            paginator
+            first={lazyParams.first}
+            rows={lazyParams.rows}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            loading={loading}
+            tableStyle={{ minWidth: "50rem" }}
+            paginatorClassName="border-none"
+            rowsPerPageOptions={[5, 10, 25]}
+          >
+            <Column header="SL" body={indexBody} style={{ width: "5%" }} />
+            <Column
+              field="name"
+              header="Project Name"
+              style={{ width: "15%" }}
+            />
+            <Column
+              field="description"
+              header="Description"
+              style={{ width: "60%" }}
+            />
+            <Column header="Edit" body={editBody} style={{ width: "10%" }} />
+            <Column
+              header="Delete"
+              body={deleteBody}
+              style={{ width: "10%" }}
+            />
+          </DataTable>
+        </div>
+      </div>
+
+      <Dialog
+        header="Create Project"
+        visible={showDialog}
+        style={{ width: "450px" }}
+        footer={dialogFooter}
+        onHide={() => setShowDialog(false)}
+      >
+        <div className="flex flex-column gap-3 pt-2">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="name" className="font-bold">
+              Name
+            </label>
+            <InputText
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter Project Name"
+              autoFocus
+            />
+          </div>
+
+          <div className="flex flex-column gap-2">
+            <label htmlFor="description" className="font-bold">
+              Description
+            </label>
+            <InputTextarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter Description"
+              rows={3}
+              autoResize
+            />
+          </div>
+        </div>
+      </Dialog>
+    </div>
+  );
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\services\project-imp.service.ts
+import { injectable } from "inversify";
+import api from "@/app/network/interceptor";
+import { ProjectService } from "./project.service";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { container } from "@/app/di";
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  ProjectAssignUserRequestDto,
+  ProjectAssignUserResponseDto,
+  ProjectCreateRequestDto,
+  ProjectCreateResponseDto,
+  ProjectRemoveUserResponseDto,
+  ProjectResponseDto,
+} from "../dtos/project.dto";
+
+@injectable()
+export class ProjectServiceImp implements ProjectService {
+  private cookieService = container.get<CookieService>(CookieServiceToken);
+
+  getProjects = async (
+    page: number,
+    rows: number
+  ): Promise<PaginationResponseDto<ProjectResponseDto> | ErrorResponseDto> => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+      const orgId = loginInfo?.activeOrg?.id || 0;
+
+      const response = await api.post<
+        PaginationResponseDto<ProjectResponseDto>
+      >("/projects/all", {
+        orgId,
+        page,
+        rows,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  createProject = async (
+    request: ProjectCreateRequestDto
+  ): Promise<ProjectCreateResponseDto | ErrorResponseDto> => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+
+      // Auto-inject the active Org ID
+      request.orgId = loginInfo?.activeOrg?.id || 0;
+
+      const response = await api.post<ProjectCreateResponseDto>(
+        "/projects/",
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  getUserProjects = async (
+    userId: number
+  ): Promise<ProjectResponseDto[] | ErrorResponseDto> => {
+    try {
+      // GET /projects/user/{userId}
+      const response = await api.get<ProjectResponseDto[]>(
+        `/projects/user/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  assignUserToProject = async (
+    projectId: number,
+    request: ProjectAssignUserRequestDto
+  ): Promise<ProjectAssignUserResponseDto | ErrorResponseDto> => {
+    try {
+      // POST /projects/{projectId}/users
+      const response = await api.post<ProjectAssignUserResponseDto>(
+        `/projects/${projectId}/users`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  removeUserFromProject = async (
+    projectId: number,
+    userId: number
+  ): Promise<ProjectRemoveUserResponseDto | ErrorResponseDto> => {
+    try {
+      // DELETE /projects/{projectId}/users/{userId}
+      const response = await api.delete<ProjectRemoveUserResponseDto>(
+        `/projects/${projectId}/users/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\services\project.service.ts
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  ProjectAssignUserRequestDto,
+  ProjectAssignUserResponseDto,
+  ProjectCreateRequestDto,
+  ProjectCreateResponseDto,
+  ProjectRemoveUserResponseDto,
+  ProjectResponseDto,
+} from "../dtos/project.dto";
+
+export interface ProjectService {
+  /**
+   * Fetch paginated projects for the active organization.
+   * Endpoint: POST /projects/all
+   */
+  getProjects: (
+    page: number,
+    rows: number
+  ) => Promise<PaginationResponseDto<ProjectResponseDto> | ErrorResponseDto>;
+
+  /**
+   * Create a new project.
+   * Endpoint: POST /projects/
+   */
+  createProject: (
+    request: ProjectCreateRequestDto
+  ) => Promise<ProjectCreateResponseDto | ErrorResponseDto>;
+
+  getUserProjects: (
+    userId: number
+  ) => Promise<ProjectResponseDto[] | ErrorResponseDto>;
+
+  // NEW: Assign a user to a project
+  assignUserToProject: (
+    projectId: number,
+    request: ProjectAssignUserRequestDto
+  ) => Promise<ProjectAssignUserResponseDto | ErrorResponseDto>;
+
+  // NEW: Remove a user from a project
+  removeUserFromProject: (
+    projectId: number,
+    userId: number
+  ) => Promise<ProjectRemoveUserResponseDto | ErrorResponseDto>;
+}
+
+export const ProjectServiceToken = Symbol("ProjectService");
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\dtos\role-create-request.dto.ts
+export class RoleCreateRequestDto {
+  name: string = "";
+  orgId: number = 0;
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\dtos\role-create-response.dto.ts
+export class RoleCreateResponseDto {
+  id: number = 0;
+  name: string = "";
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\dtos\role-response.dto.ts
+export class RoleResponseDto {
+  id: number = 0;
+  name: string = "";
+}
+
+
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\page.tsx
-import React from "react";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { container } from "@/app/di";
+import { RoleService, RoleServiceToken } from "./services/role.service";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+
+// Updated Imports
+import { RoleResponseDto } from "./dtos/role-response.dto";
+import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
+
+// PrimeReact Imports
+import { DataTable, DataTableStateEvent } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Toast } from "primereact/toast";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { classNames } from "primereact/utils";
 
 export default function Role() {
-  return <div>Role</div>;
+  const roleService = container.get<RoleService>(RoleServiceToken);
+  const toast = useRef<Toast>(null);
+
+  // 1. Update State to use new RoleResponseDto
+  const [roles, setRoles] = useState<RoleResponseDto[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+
+  const [lazyParams, setLazyParams] = useState({
+    first: 0,
+    rows: 5,
+    page: 1,
+  });
+
+  const [roleDialog, setRoleDialog] = useState<boolean>(false);
+  const [roleName, setRoleName] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  useEffect(() => {
+    loadRoles();
+  }, [lazyParams]);
+
+  const loadRoles = async () => {
+    setLoading(true);
+    // Call service with new signature
+    const data = await roleService.getRoles(lazyParams.page, lazyParams.rows);
+
+    if (data instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: data.message,
+      });
+    } else {
+      // The generic PaginationResponseDto<T> has 'items' and 'total'
+      setRoles(data.items);
+      setTotalRecords(data.total);
+    }
+    setLoading(false);
+  };
+
+  const onPage = (event: DataTableStateEvent) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: (event.page || 0) + 1,
+    });
+  };
+
+  const openNew = () => {
+    setRoleName("");
+    setSubmitted(false);
+    setRoleDialog(true);
+  };
+
+  const hideDialog = () => {
+    setSubmitted(false);
+    setRoleDialog(false);
+  };
+
+  const saveRole = async () => {
+    setSubmitted(true);
+
+    if (roleName.trim()) {
+      setLoading(true);
+
+      // Prepare request DTO
+      const req = new RoleCreateRequestDto();
+      req.name = roleName;
+
+      const response = await roleService.createRole(req);
+
+      if (response instanceof ErrorResponseDto) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: response.message,
+        });
+      } else {
+        toast.current?.show({
+          severity: "success",
+          summary: "Successful",
+          detail: "Role Created",
+          life: 3000,
+        });
+        setRoleDialog(false);
+        setRoleName("");
+        loadRoles();
+      }
+      setLoading(false);
+    }
+  };
+
+  const roleDialogFooter = (
+    <React.Fragment>
+      <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
+      <Button label="Save" icon="pi pi-check" onClick={saveRole} />
+    </React.Fragment>
+  );
+
+  const editAction = () => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          text
+          severity="info"
+          aria-label="Update"
+        />
+      </div>
+    );
+  };
+
+  const deleteAction = () => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-trash"
+          rounded
+          text
+          severity="danger"
+          aria-label="Delete"
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="grid p-fluid p-4">
+      <div className="col-12">
+        <Toast ref={toast} />
+
+        <div className="card shadow-2 border-round p-4 surface-card">
+          <div className="flex justify-content-between align-items-center mb-4">
+            <h2 className="m-0">Manage Roles</h2>
+            <Button
+              label="New"
+              icon="pi pi-plus"
+              severity="success"
+              className="w-auto"
+              onClick={openNew}
+            />
+          </div>
+
+          <DataTable
+            value={roles}
+            lazy
+            dataKey="id"
+            paginator
+            first={lazyParams.first}
+            rows={lazyParams.rows}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            loading={loading}
+            tableStyle={{ minWidth: "50rem" }}
+            rowsPerPageOptions={[5, 10, 25]}
+            paginatorClassName="border-none"
+            className="border-none"
+          >
+            <Column field="id" header="ID" style={{ width: "10%" }}></Column>
+            <Column
+              field="name"
+              header="Role Name"
+              style={{ width: "70%" }}
+            ></Column>
+            <Column header="Edit" body={editAction} style={{ width: "10%" }} />
+            <Column
+              header="Delete"
+              body={deleteAction}
+              style={{ width: "10%" }}
+            />
+          </DataTable>
+        </div>
+
+        <Dialog
+          visible={roleDialog}
+          style={{ width: "32rem" }}
+          breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+          header="New Role"
+          modal
+          className="p-fluid"
+          footer={roleDialogFooter}
+          onHide={hideDialog}
+        >
+          <div className="field">
+            <label htmlFor="name" className="font-bold">
+              Name
+            </label>
+            <InputText
+              id="name"
+              value={roleName}
+              onChange={(e) => setRoleName(e.target.value)}
+              required
+              autoFocus
+              className={classNames({ "p-invalid": submitted && !roleName })}
+            />
+            {submitted && !roleName && (
+              <small className="p-error">Name is required.</small>
+            )}
+          </div>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\services\role-imp.service.ts
+import { injectable } from "inversify";
+import api from "@/app/network/interceptor";
+import { RoleService } from "./role.service";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { container } from "@/app/di";
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
+
+// DTO Imports based on your new structure
+import { RoleResponseDto } from "../dtos/role-response.dto";
+import { RoleCreateRequestDto } from "../dtos/role-create-request.dto"; // Assuming this maps to your provided class
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import { RoleCreateResponseDto } from "../dtos/role-create-response.dto";
+
+@injectable()
+export class RoleServiceImp implements RoleService {
+  private cookieService = container.get<CookieService>(CookieServiceToken);
+
+  private getOrgId(): number {
+    const loginInfo = this.cookieService.getJwtLoginInfo();
+    return loginInfo?.activeOrg ? loginInfo.activeOrg.id : 0;
+  }
+
+  getRoles = async (
+    page: number,
+    rows: number
+  ): Promise<PaginationResponseDto<RoleResponseDto> | ErrorResponseDto> => {
+    try {
+      const orgId = this.getOrgId();
+
+      // We expect the API to return the generic pagination structure
+      const response = await api.post<PaginationResponseDto<RoleResponseDto>>(
+        "/roles/all",
+        {
+          orgId: orgId,
+          page: page,
+          rows: rows,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  createRole = async (
+    roleCreateRequest: RoleCreateRequestDto
+  ): Promise<RoleCreateResponseDto | ErrorResponseDto> => {
+    try {
+      const orgId = this.getOrgId();
+
+      // Note: We use the 'name' from your DTO and inject the 'orgId'
+      const response = await api.post<RoleCreateResponseDto>("/roles/", {
+        name: roleCreateRequest.name,
+        orgId: orgId,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\services\role.service.ts
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { RoleResponseDto } from "../dtos/role-response.dto";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import { RoleCreateRequestDto } from "../dtos/role-create-request.dto";
+import { RoleCreateResponseDto } from "../dtos/role-create-response.dto";
+
+export interface RoleService {
+  getRoles: (
+    page: number,
+    rows: number
+  ) => Promise<PaginationResponseDto<RoleResponseDto> | ErrorResponseDto>;
+  createRole: (
+    roleCreateRequest: RoleCreateRequestDto
+  ) => Promise<RoleCreateResponseDto | ErrorResponseDto>;
+}
+
+export const RoleServiceToken = Symbol("RoleService");
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\user\dtos\user.dto.ts
+// Response when fetching a list or single user
+export class UserResponseDto {
+  id: number = 0;
+  email: string = "";
+  firstName?: string = "";
+  lastName?: string = "";
+
+  // These fields are necessary to populate the Edit Modal
+  roleId: number | null = null;
+  roleName?: string = "";
+
+  menuTemplateId: number | null = null;
+  menuTemplateName?: string = "";
+
+  verified: boolean = false;
+  disabled: boolean = false;
+  super: boolean = false;
+}
+
+// Request body for PATCH update
+export class UpdateUserRequestDto {
+  roleId: number | null = null;
+  menuTemplateId: number | null = null;
+  disabled: boolean = false;
+}
+
+export class UpdateUserResponseDto {
+  success: boolean = true;
 }
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\user\page.tsx
-import React from "react";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import { container } from "@/app/di";
 
-export default function User() {
-  return <div>User</div>;
+// Services
+import { UserService, UserServiceToken } from "./services/user.service";
+import { RoleService, RoleServiceToken } from "../role/services/role.service";
+import {
+  MenuTemplateService,
+  MenuTemplateServiceToken,
+} from "../menu-template/services/menu-template.service";
+import {
+  ProjectService,
+  ProjectServiceToken,
+} from "../project/services/project.service";
+
+// DTOs
+import { UpdateUserRequestDto, UserResponseDto } from "./dtos/user.dto";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { RoleResponseDto } from "../role/dtos/role-response.dto";
+import { MenuTemplateResponseDto } from "../menu-template/dtos/menu-template.dto";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+
+// UPDATED: Import PermissionType
+import {
+  ProjectResponseDto,
+  ProjectAssignUserRequestDto,
+} from "../project/dtos/project.dto";
+
+// PrimeReact
+import { DataTable, DataTableStateEvent } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
+import { InputSwitch } from "primereact/inputswitch";
+import { Toast } from "primereact/toast";
+import { Tag } from "primereact/tag";
+
+export default function UserPage() {
+  const userService = container.get<UserService>(UserServiceToken);
+  const roleService = container.get<RoleService>(RoleServiceToken);
+  const menuTemplateService = container.get<MenuTemplateService>(
+    MenuTemplateServiceToken
+  );
+  const projectService = container.get<ProjectService>(ProjectServiceToken);
+
+  const toast = useRef<Toast>(null);
+
+  // --- Table Data State ---
+  const [users, setUsers] = useState<UserResponseDto[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [lazyParams, setLazyParams] = useState({ first: 0, rows: 5, page: 1 });
+
+  // --- Dropdown Source Data ---
+  const [roleOptions, setRoleOptions] = useState<
+    PaginationResponseDto<RoleResponseDto>
+  >(new PaginationResponseDto<RoleResponseDto>());
+  const [menuTemplateOptions, setMenuTemplateOptions] = useState<
+    PaginationResponseDto<MenuTemplateResponseDto>
+  >(new PaginationResponseDto<MenuTemplateResponseDto>());
+  const [allProjects, setAllProjects] = useState<ProjectResponseDto[]>([]);
+
+  // --- Edit Dialog State ---
+  const [showEditDialog, setEditShowDialog] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<number>(0);
+  const [roleDropdown, setRoleDropdown] = useState<RoleResponseDto>(
+    new RoleResponseDto()
+  );
+  const [menuTemplateDropdown, setMenuTemplateDropdown] =
+    useState<MenuTemplateResponseDto>(new MenuTemplateResponseDto());
+  const [disabled, setDisabled] = useState(false);
+
+  // --- Project Assignment Dialog State ---
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const [projectUser, setProjectUser] = useState<UserResponseDto | null>(null);
+  const [userProjects, setUserProjects] = useState<ProjectResponseDto[]>([]);
+
+  // Selection States
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  );
+
+  useEffect(() => {
+    loadDropdownData();
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [lazyParams]);
+
+  const loadDropdownData = async () => {
+    const rolesRes = await roleService.getRoles(1, 100);
+    if (!(rolesRes instanceof ErrorResponseDto)) setRoleOptions(rolesRes);
+
+    const menuRes = await menuTemplateService.getMenuTemplates(1, 100);
+    if (!(menuRes instanceof ErrorResponseDto)) setMenuTemplateOptions(menuRes);
+
+    const projRes = await projectService.getProjects(1, 100);
+    if (!(projRes instanceof ErrorResponseDto)) setAllProjects(projRes.items);
+  };
+
+  const loadUsers = async () => {
+    setLoading(true);
+    const res = await userService.getUsers(lazyParams.page, lazyParams.rows);
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      setUsers(res.items);
+      setTotalRecords(res.total);
+    }
+    setLoading(false);
+  };
+
+  const onPage = (event: DataTableStateEvent) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: (event.page || 0) + 1,
+    });
+  };
+
+  // --- Edit User Logic ---
+  const openEditDialog = (user: UserResponseDto) => {
+    if (user.super) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Cannot edit super user",
+      });
+      return;
+    }
+    setEditingUserId(user.id);
+    setRoleDropdown({ id: user.roleId || 0, name: user.roleName || "" });
+    setMenuTemplateDropdown({
+      id: user.menuTemplateId || 0,
+      name: user.menuTemplateName || "",
+      orgId: 0,
+      tree: "",
+    });
+    setDisabled(user.disabled);
+    setEditShowDialog(true);
+  };
+
+  const saveUser = async () => {
+    const updateRequest = new UpdateUserRequestDto();
+    updateRequest.roleId = roleDropdown.id;
+    updateRequest.menuTemplateId = menuTemplateDropdown.id;
+    updateRequest.disabled = disabled;
+
+    const res = await userService.updateUser(editingUserId, updateRequest);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "User updated successfully",
+      });
+      setEditShowDialog(false);
+      loadUsers();
+    }
+  };
+
+  // --- Project Management Logic ---
+
+  const openProjectDialog = async (user: UserResponseDto) => {
+    if (user.super) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Cannot modify super user projects!",
+      });
+      return;
+    }
+
+    setProjectUser(user);
+    setShowProjectDialog(true);
+    setSelectedProjectId(null);
+    setUserProjects([]);
+
+    const res = await projectService.getUserProjects(user.id);
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      setUserProjects(res);
+    }
+  };
+
+  const handleAssignProject = async () => {
+    if (!selectedProjectId || !projectUser) return;
+
+    // UPDATED: Include permissionType
+    const request = new ProjectAssignUserRequestDto();
+    request.userId = projectUser.id;
+
+    const res = await projectService.assignUserToProject(
+      selectedProjectId,
+      request
+    );
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project assigned",
+      });
+      const updatedList = await projectService.getUserProjects(projectUser.id);
+      if (!(updatedList instanceof ErrorResponseDto)) {
+        setUserProjects(updatedList);
+      }
+      setSelectedProjectId(null);
+    }
+  };
+
+  const handleRemoveProject = async (project: ProjectResponseDto) => {
+    if (!projectUser) return;
+
+    const res = await projectService.removeUserFromProject(
+      project.id,
+      projectUser.id
+    );
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "User removed from project",
+      });
+      setUserProjects((prev) => prev.filter((p) => p.id !== project.id));
+    }
+  };
+
+  // --- Renderers ---
+  const indexBody = (rowData: any, props: any) => props.rowIndex + 1;
+  const roleBody = (rowData: UserResponseDto) => rowData.roleName || "N/A";
+  const mtBody = (rowData: UserResponseDto) =>
+    rowData.menuTemplateName || "N/A";
+  const disabledBody = (rowData: UserResponseDto) => (
+    <Tag
+      severity={rowData.disabled ? "danger" : "success"}
+      value={rowData.disabled ? "Inactive" : "Active"}
+    />
+  );
+  const verifiedBody = (rowData: UserResponseDto) => (
+    <Tag
+      severity={rowData.verified ? "success" : "danger"}
+      value={rowData.verified ? "Verified" : "Unverified"}
+    />
+  );
+  const superBody = (rowData: UserResponseDto) => (
+    <Tag
+      severity={rowData.super ? "danger" : "info"}
+      value={rowData.super ? "Super" : "Regular"}
+    />
+  );
+
+  const editBody = (rowData: UserResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-user-edit"
+          rounded
+          text
+          severity="info"
+          aria-label="Edit"
+          onClick={() => openEditDialog(rowData)}
+        />
+      </div>
+    );
+  };
+
+  const projectBody = (rowData: UserResponseDto) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon="pi pi-briefcase"
+          rounded
+          text
+          severity="warning"
+          aria-label="Projects"
+          onClick={() => openProjectDialog(rowData)}
+        />
+      </div>
+    );
+  };
+
+  const dialogFooter = (
+    <div>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        onClick={() => setEditShowDialog(false)}
+        className="p-button-text"
+      />
+      <Button label="Update" icon="pi pi-check" onClick={saveUser} autoFocus />
+    </div>
+  );
+
+  return (
+    <div className="grid p-fluid p-4">
+      <Toast ref={toast} />
+      <div className="col-12">
+        <div className="card shadow-2 border-round p-4 surface-card">
+          <h2 className="mb-4">User Management</h2>
+
+          <DataTable
+            value={users}
+            lazy
+            paginator
+            first={lazyParams.first}
+            rows={lazyParams.rows}
+            totalRecords={totalRecords}
+            onPage={onPage}
+            loading={loading}
+            rowsPerPageOptions={[5, 10, 25]}
+            tableStyle={{ minWidth: "60rem" }}
+            paginatorClassName="border-none"
+          >
+            <Column header="SL" body={indexBody} style={{ width: "5%" }} />
+            <Column field="email" header="Email" style={{ width: "15%" }} />
+            <Column
+              field="roleName"
+              header="Role"
+              body={roleBody}
+              style={{ width: "10%" }}
+            />
+            <Column
+              field="menuTemplateName"
+              header="Menu Template"
+              body={mtBody}
+              style={{ width: "20%" }}
+            />
+            <Column
+              field="disabled"
+              header="Status"
+              body={disabledBody}
+              style={{ width: "10%" }}
+            />
+            <Column
+              field="verified"
+              header="Verified"
+              body={verifiedBody}
+              style={{ width: "10%" }}
+            />
+            <Column
+              field="super"
+              header="Type"
+              body={superBody}
+              style={{ width: "10%" }}
+            />
+            <Column
+              header="Projects"
+              body={projectBody}
+              style={{ width: "5%" }}
+            />
+            <Column header="Edit" body={editBody} style={{ width: "5%" }} />
+          </DataTable>
+        </div>
+      </div>
+
+      {/* --- Dialog 1: Edit User --- */}
+      <Dialog
+        header="Edit User"
+        visible={showEditDialog}
+        style={{ width: "400px" }}
+        footer={dialogFooter}
+        onHide={() => setEditShowDialog(false)}
+      >
+        <div className="flex flex-column gap-4 pt-2">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="role" className="font-bold">
+              Assign Role
+            </label>
+            <Dropdown
+              id="role"
+              value={roleDropdown.id}
+              onChange={(e) =>
+                setRoleDropdown({ ...roleDropdown, id: e.value })
+              }
+              options={roleOptions.items}
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select a Role"
+              className="w-full"
+            />
+          </div>
+          <div className="flex flex-column gap-2">
+            <label htmlFor="menu" className="font-bold">
+              Assign Menu Template
+            </label>
+            <Dropdown
+              id="menu"
+              value={menuTemplateDropdown.id}
+              onChange={(e) =>
+                setMenuTemplateDropdown({
+                  ...menuTemplateDropdown,
+                  id: e.value,
+                })
+              }
+              options={menuTemplateOptions.items}
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select a Menu Template"
+              className="w-full"
+            />
+          </div>
+          <div className="flex align-items-center gap-3">
+            <InputSwitch
+              inputId="status"
+              checked={disabled}
+              onChange={(e) => setDisabled(e.value)}
+            />
+            <label htmlFor="status" className="font-bold">
+              {disabled ? "Disabled" : "Active"}
+            </label>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* --- Dialog 2: Manage Projects (UPDATED) --- */}
+      <Dialog
+        header={`Projects for ${projectUser?.firstName || "User"}`}
+        visible={showProjectDialog}
+        style={{ width: "600px" }} // Widened slightly for new dropdown
+        onHide={() => setShowProjectDialog(false)}
+      >
+        <div className="flex flex-column gap-4">
+          {/* Add New Project Section */}
+          <div className="p-inputgroup">
+            <Dropdown
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.value)}
+              options={allProjects}
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select Project"
+              className="w-full"
+            />
+            <Button
+              label="Add"
+              icon="pi pi-plus"
+              onClick={handleAssignProject}
+              disabled={!selectedProjectId}
+            />
+          </div>
+
+          {/* List Assigned Projects */}
+          <div className="border-top-1 surface-border pt-3">
+            <span className="font-bold block mb-2">Assigned Projects</span>
+            {userProjects.length === 0 ? (
+              <div className="text-center p-3 text-500">
+                No projects assigned yet.
+              </div>
+            ) : (
+              <ul className="list-none p-0 m-0">
+                {userProjects.map((proj) => (
+                  <li
+                    key={proj.id}
+                    className="flex align-items-center justify-content-between p-2 hover:surface-hover border-round"
+                  >
+                    <span>{proj.name}</span>
+                    <Button
+                      icon="pi pi-trash"
+                      text
+                      rounded
+                      severity="danger"
+                      onClick={() => handleRemoveProject(proj)}
+                      tooltip="Remove Access"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </Dialog>
+    </div>
+  );
 }
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\user\services\user-imp.service.ts
+import { injectable } from "inversify";
+import api from "@/app/network/interceptor";
+import { UserService } from "./user.service";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { container } from "@/app/di";
+import {
+  CookieService,
+  CookieServiceToken,
+} from "@/app/utils/cookie/CookieService";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  UpdateUserRequestDto,
+  UpdateUserResponseDto,
+  UserResponseDto,
+} from "../dtos/user.dto";
+
+@injectable()
+export class UserServiceImp implements UserService {
+  private cookieService = container.get<CookieService>(CookieServiceToken);
+
+  getUsers = async (
+    page: number,
+    rows: number
+  ): Promise<PaginationResponseDto<UserResponseDto> | ErrorResponseDto> => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+      const orgId = loginInfo?.activeOrg?.id || 0;
+
+      const response = await api.post<PaginationResponseDto<UserResponseDto>>(
+        "/users/all",
+        {
+          orgId,
+          page,
+          rows,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  updateUser = async (
+    userId: number,
+    request: UpdateUserRequestDto
+  ): Promise<UpdateUserResponseDto | ErrorResponseDto> => {
+    try {
+      const loginInfo = this.cookieService.getJwtLoginInfo();
+      const orgId = loginInfo?.activeOrg?.id || 0;
+
+      // Endpoint: /users/{userId}/organization/{orgId}
+      const response = await api.patch<UpdateUserResponseDto>(
+        `/users/${userId}/organization/${orgId}`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\user\services\user.service.ts
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
+import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
+import {
+  UpdateUserRequestDto,
+  UpdateUserResponseDto,
+  UserResponseDto,
+} from "../dtos/user.dto";
+
+export interface UserService {
+  /**
+   * Fetch paginated users for the active organization.
+   * Endpoint: POST /users/all
+   */
+  getUsers: (
+    page: number,
+    rows: number
+  ) => Promise<PaginationResponseDto<UserResponseDto> | ErrorResponseDto>;
+
+  /**
+   * Update a user's specific details (Role, Menu, Status).
+   * Endpoint: PATCH /users/{userId}/organization/{orgId}
+   */
+  updateUser: (
+    userId: number,
+    request: UpdateUserRequestDto
+  ) => Promise<UpdateUserResponseDto | ErrorResponseDto>;
+}
+
+export const UserServiceToken = Symbol("UserService");
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\auth-guard.tsx
@@ -1501,6 +3761,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\constants.ts
 // app/constants.ts
 export const APP_NAME = "ABTestingTool";
+export const ACTIVE_ORG_POSITION_COOKIE = "active-org-position";
+export const ACTIVE_PROJECT_POSITION_COOKIE = "active-project-position";
+export const ACCESS_TOKEN_COOKIE = "access-token";
+export const REFRESH_TOKEN_COOKIE = "refresh-token";
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\di.ts
@@ -1530,6 +3794,26 @@ import {
   OrganizationServiceToken,
 } from "@/app/(auth)/org/services/organization.service";
 import { OrganizationServiceImp } from "@/app/(auth)/org/services/organization-imp.service";
+import {
+  RoleService,
+  RoleServiceToken,
+} from "@/app/(main)/role/services/role.service";
+import { RoleServiceImp } from "@/app/(main)/role/services/role-imp.service";
+import {
+  MenuTemplateService,
+  MenuTemplateServiceToken,
+} from "@/app/(main)/menu-template/services/menu-template.service";
+import { MenuTemplateServiceImp } from "@/app/(main)/menu-template/services/menu-template-imp.service";
+import {
+  UserService,
+  UserServiceToken,
+} from "@/app/(main)/user/services/user.service";
+import { UserServiceImp } from "@/app/(main)/user/services/user-imp.service";
+import {
+  ProjectService,
+  ProjectServiceToken,
+} from "@/app/(main)/project/services/project.service";
+import { ProjectServiceImp } from "@/app/(main)/project/services/project-imp.service";
 
 const container: Container = new Container();
 
@@ -1542,6 +3826,12 @@ container.bind<MenuService>(MenuServiceToken).to(MenuServiceImp);
 container
   .bind<OrganizationService>(OrganizationServiceToken)
   .to(OrganizationServiceImp);
+container.bind<RoleService>(RoleServiceToken).to(RoleServiceImp);
+container
+  .bind<MenuTemplateService>(MenuTemplateServiceToken)
+  .to(MenuTemplateServiceImp);
+container.bind<UserService>(UserServiceToken).to(UserServiceImp);
+container.bind<ProjectService>(ProjectServiceToken).to(ProjectServiceImp);
 
 export { container };
 
@@ -1564,9 +3854,15 @@ h6 {
 .layout-wrap {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 
   > .play-ground {
     width: 100%;
+    height: 100%;
+    overflow-y: auto; /* Vertical scroll enabled */
+    overflow-x: hidden; /* FIX: Hide horizontal scroll caused by grid margins */
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -1787,9 +4083,16 @@ export class ErrorResponseDto {
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\network\interceptor.ts
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { ErrorResponseDto } from "./error-response.dto";
 import { ApiErrorDto } from "@/app/network/api-error.dto";
+import { CookieServiceImp } from "@/app/utils/cookie/CookieServiceImp";
+
+// Define response shape for the refresh call
+interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 
 const baseURL = "http://127.0.0.1:8000";
 
@@ -1798,31 +4101,141 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// --- State for Refresh Logic ---
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// --- 1. Request Interceptor (Email Header) ---
+api.interceptors.request.use(
+  (config) => {
+    if (typeof document !== "undefined") {
+      const cookieService = new CookieServiceImp();
+      const loginInfo = cookieService.getJwtLoginInfo();
+      const accessToken = cookieService.getCookie("access-token");
+
+      if (loginInfo && loginInfo.sub && accessToken) {
+        config.headers["email"] = loginInfo.sub;
+        config.headers["authorization"] = "Bearer " + accessToken;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// --- 2. Response Interceptor (Error Handling & Refresh) ---
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    // ---------------------------------------------------
+    // PART A: Refresh Token Logic
+    // ---------------------------------------------------
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (typeof document === "undefined") {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const cookieService = new CookieServiceImp();
+      const currentRefreshToken = cookieService.getCookie("refresh-token");
+
+      if (!currentRefreshToken) {
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post<RefreshResponse>(
+          `${baseURL}/auth/refresh`,
+          { refreshToken: currentRefreshToken },
+          { withCredentials: true }
+        );
+
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        cookieService.setCookie("access-token", accessToken, 1);
+        cookieService.setCookie("refresh-token", newRefreshToken, 1);
+
+        processQueue(null, accessToken);
+
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+
+        cookieService.deleteCookie("access-token");
+        cookieService.deleteCookie("refresh-token");
+        window.location.href = "/login";
+
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    // ---------------------------------------------------
+    // PART B: Error Mapping (Fixed Types)
+    // ---------------------------------------------------
     const errorResponseDto: ErrorResponseDto = new ErrorResponseDto();
 
-    if (axios.isAxiosError(error)) {
-      if (error.response && typeof error.response.data.detail === "string") {
-        errorResponseDto.message = error.response.data.detail;
-        errorResponseDto.status = error.status;
-      } else if (
-        error.response &&
-        typeof Array.isArray(error.response.data.detail)
-      ) {
-        const apiErrorDto: ApiErrorDto = error.response.data
-          .detail[0] as ApiErrorDto;
+    if (axios.isAxiosError(error) && error.response) {
+      // 1. Cast to 'any' to safely access dynamic properties
+      const errorData = error.response.data as any;
+      const status = error.response.status;
 
+      // 2. Check if 'detail' is a simple string
+      if (errorData && typeof errorData.detail === "string") {
+        errorResponseDto.message = errorData.detail;
+        errorResponseDto.status = status;
+      }
+      // 3. Check if 'detail' is an Array AND has items (CORRECTED LOGIC)
+      else if (
+        errorData &&
+        Array.isArray(errorData.detail) &&
+        errorData.detail.length > 0 // Ensure it's not empty
+      ) {
+        const apiErrorDto: ApiErrorDto = errorData.detail[0] as ApiErrorDto;
         errorResponseDto.message = apiErrorDto.msg;
-        errorResponseDto.status = error.status;
-      } else {
+        errorResponseDto.status = status;
+      }
+      // 4. Fallback for other error formats
+      else {
         errorResponseDto.message = error.message;
-        errorResponseDto.status = error.status;
+        errorResponseDto.status = status;
       }
     } else {
       errorResponseDto.message = error.message;
-      errorResponseDto.status = error.status;
+      errorResponseDto.status = (error as any)?.status || 500;
     }
 
     return Promise.reject(errorResponseDto);
@@ -2221,17 +4634,26 @@ export default function Home() {
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\utils\cookie\CookieService.ts
+import { JwtLoginInfoDto } from "./dtos/jwt-login-info.dto";
+
 export interface CookieService {
   setCookie: (name: string, value: string, expiredDays: number) => boolean;
   getCookie: (name: string) => string | null;
   deleteCookie: (name: string) => boolean;
+  getJwtLoginInfo: () => JwtLoginInfoDto | null;
 }
 
 export const CookieServiceToken = Symbol("CookieService");
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\utils\cookie\CookieServiceImp.ts
+import { jwtDecode } from "jwt-decode";
 import { CookieService } from "./CookieService";
+import { JwtLoginInfoDto } from "./dtos/jwt-login-info.dto";
+import {
+  ACTIVE_ORG_POSITION_COOKIE,
+  ACTIVE_PROJECT_POSITION_COOKIE,
+} from "@/app/constants";
 
 export class CookieServiceImp implements CookieService {
   getCookie = (name: string): string | null => {
@@ -2261,6 +4683,70 @@ export class CookieServiceImp implements CookieService {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     return true;
   };
+
+  getJwtLoginInfo = (): JwtLoginInfoDto | null => {
+    const tokenString = this.getCookie("access-token");
+
+    if (!tokenString) {
+      return null;
+    }
+
+    try {
+      // Decode the raw token object
+      const decoded = jwtDecode<JwtLoginInfoDto>(tokenString);
+      const activeOrgPosition = this.getCookie(ACTIVE_ORG_POSITION_COOKIE);
+      const activeProjectPosition = this.getCookie(
+        ACTIVE_PROJECT_POSITION_COOKIE
+      );
+
+      // Map to Class Instance
+      const loginInfo = new JwtLoginInfoDto();
+      loginInfo.sub = decoded.sub;
+      loginInfo.userId = decoded.userId;
+      loginInfo.orgs = decoded.orgs;
+      loginInfo.projects = decoded.projects;
+      loginInfo.exp = decoded.exp;
+      loginInfo.activeOrg = decoded.orgs[parseInt(activeOrgPosition || "0")];
+      loginInfo.activeProject =
+        decoded.projects[parseInt(activeProjectPosition || "0")];
+
+      return loginInfo;
+    } catch (error) {
+      console.error("Error decoding access token:", error);
+      return null;
+    }
+  };
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\utils\cookie\dtos\jwt-login-info.dto.ts
+export class JwtOrgDto {
+  id: number = 0;
+  name: string = "";
+  disabled: boolean = false;
+}
+
+export class JwtProjectDto {
+  id: number = 0;
+  name: string = "";
+  disabled: boolean = false;
+}
+
+export class JwtLoginInfoDto {
+  sub: string = "";
+  userId: number = 0;
+  orgs: JwtOrgDto[] = [];
+  projects: JwtProjectDto[] = [];
+  exp: number = 0;
+  activeOrg: JwtOrgDto | null = null;
+  activeProject: JwtProjectDto | null = null;
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\utils\dtos\pagination-response.dto.ts
+export class PaginationResponseDto<T> {
+  items: T[] = [];
+  total: number = 0;
 }
 
 
@@ -2657,7 +5143,9 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
       "version": "0.1.0",
       "dependencies": {
         "axios": "^1.9.0",
+        "chart.js": "^4.5.1",
         "inversify": "^7.0.0-alpha.5",
+        "jwt-decode": "^4.0.0",
         "next": "15.3.1",
         "primeflex": "^4.0.0",
         "primeicons": "^7.0.0",
@@ -4239,6 +6727,11 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
         "@jridgewell/sourcemap-codec": "^1.4.14"
       }
     },
+    "node_modules/@kurkle/color": {
+      "version": "0.3.4",
+      "resolved": "https://registry.npmjs.org/@kurkle/color/-/color-0.3.4.tgz",
+      "integrity": "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="
+    },
     "node_modules/@napi-rs/wasm-runtime": {
       "version": "0.2.11",
       "resolved": "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.11.tgz",
@@ -5688,6 +8181,17 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
       "dev": true,
       "engines": {
         "node": ">=10"
+      }
+    },
+    "node_modules/chart.js": {
+      "version": "4.5.1",
+      "resolved": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz",
+      "integrity": "sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==",
+      "dependencies": {
+        "@kurkle/color": "^0.3.0"
+      },
+      "engines": {
+        "pnpm": ">=8"
       }
     },
     "node_modules/chokidar": {
@@ -7778,6 +10282,14 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
         "node": ">=6"
       }
     },
+    "node_modules/jwt-decode": {
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/jwt-decode/-/jwt-decode-4.0.0.tgz",
+      "integrity": "sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==",
+      "engines": {
+        "node": ">=18"
+      }
+    },
     "node_modules/leven": {
       "version": "3.1.0",
       "resolved": "https://registry.npmjs.org/leven/-/leven-3.1.0.tgz",
@@ -9603,7 +12115,9 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
   },
   "dependencies": {
     "axios": "^1.9.0",
+    "chart.js": "^4.5.1",
     "inversify": "^7.0.0-alpha.5",
+    "jwt-decode": "^4.0.0",
     "next": "15.3.1",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
@@ -9633,7 +12147,9 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pac
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pg-docker-db.session.sql
-
+-- select * FROM role;
+SELECT * FROM userorglink;
+-- SELECT * FROM userinfo;
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\README.md
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
@@ -9673,6 +12189,9 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+## To bundle full project code:
+
+    npx tsx bundler.ts
 
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\tsconfig.json

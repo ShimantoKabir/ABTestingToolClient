@@ -9,7 +9,7 @@ interface RefreshResponse {
   refreshToken: string;
 }
 
-const baseURL = "http://127.0.0.1:8000";
+const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const api = axios.create({
   baseURL: baseURL,
@@ -48,7 +48,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // --- 2. Response Interceptor (Error Handling & Refresh) ---
@@ -94,7 +94,7 @@ api.interceptors.response.use(
         const response = await axios.post<RefreshResponse>(
           `${baseURL}/auth/refresh`,
           { refreshToken: currentRefreshToken },
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -154,7 +154,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(errorResponseDto);
-  }
+  },
 );
 
 export default api;

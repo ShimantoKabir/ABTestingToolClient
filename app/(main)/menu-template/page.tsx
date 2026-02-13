@@ -31,6 +31,7 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { TreeNode } from "primereact/treenode";
 import { Tooltip } from "primereact/tooltip";
+import EditMenuTemplate from "./edit/edit";
 
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
@@ -52,6 +53,9 @@ export default function MenuPage() {
 
   const [viewDialog, setViewDialog] = useState(false);
   const [viewNodes, setViewNodes] = useState<TreeNode[]>([]);
+
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<MenuTemplateResponseDto | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -162,6 +166,51 @@ export default function MenuPage() {
     }
   };
 
+  const openEdit = async (template: MenuTemplateResponseDto) => {
+    // Load available menu nodes if not already loaded
+    if (treeNodes.length === 0) {
+      const rawNodes = await menuService.getMenuJson();
+      if (rawNodes instanceof ErrorResponseDto) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: rawNodes.message,
+        });
+        return;
+      }
+      const visualNodes = addActionsAsChildren(rawNodes as any[]);
+      setTreeNodes(visualNodes);
+    }
+    
+    setEditingTemplate(template);
+    setEditDialog(true);
+  };
+
+  const updateMenuTemplate = async (id: number, name: string, tree: string) => {
+    const { MenuTemplateUpdateRequestDto } = await import("./dtos/menu-template-update-request.dto");
+    
+    const request = new MenuTemplateUpdateRequestDto();
+    request.name = name;
+    request.tree = tree;
+
+    const res = await menuTemplateService.updateMenuTemplate(id, request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Menu Template Updated",
+      });
+      loadTemplates();
+    }
+  };
+
   const indexBodyTemplate = (rowData: MenuTemplateResponseDto, props: any) => {
     return props.rowIndex + 1;
   };
@@ -192,6 +241,9 @@ export default function MenuPage() {
           text
           severity="info"
           aria-label="Update"
+          onClick={() => openEdit(rowData)}
+          tooltip="Edit Template"
+          tooltipOptions={{ position: "top" }}
         />
       </div>
     );
@@ -351,6 +403,15 @@ export default function MenuPage() {
           />
         </div>
       </Dialog>
+
+      {/* EDIT DIALOG */}
+      <EditMenuTemplate
+        visible={editDialog}
+        onHide={() => setEditDialog(false)}
+        onUpdate={updateMenuTemplate}
+        template={editingTemplate}
+        availableMenuNodes={treeNodes}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   MenuTemplateCreateResponseDto,
   MenuTemplateResponseDto,
 } from "../dtos/menu-template.dto";
+import { MenuTemplateUpdateRequestDto } from "../dtos/menu-template-update-request.dto";
 
 export interface MenuTemplateService {
   /**
@@ -24,6 +25,14 @@ export interface MenuTemplateService {
   createMenuTemplate: (
     request: MenuTemplateCreateRequestDto
   ) => Promise<MenuTemplateCreateResponseDto | ErrorResponseDto>;
+
+  /**
+   * Updates an existing menu template.
+   */
+  updateMenuTemplate: (
+    id: number,
+    request: MenuTemplateUpdateRequestDto
+  ) => Promise<any | ErrorResponseDto>;
 }
 
 export const MenuTemplateServiceToken = Symbol("MenuTemplateService");

@@ -13,6 +13,7 @@ import {
   MenuTemplateCreateResponseDto,
   MenuTemplateResponseDto,
 } from "../dtos/menu-template.dto";
+import { MenuTemplateUpdateRequestDto } from "../dtos/menu-template-update-request.dto";
 
 @injectable()
 export class MenuTemplateServiceImp implements MenuTemplateService {
@@ -54,6 +55,21 @@ export class MenuTemplateServiceImp implements MenuTemplateService {
         "/menu-templates/",
         request
       );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  updateMenuTemplate = async (
+    id: number,
+    request: MenuTemplateUpdateRequestDto
+  ): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.patch<any>(`/menu-templates/${id}`, {
+        name: request.name,
+        tree: request.tree,
+      });
       return response.data;
     } catch (error) {
       return error as ErrorResponseDto;

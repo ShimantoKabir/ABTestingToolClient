@@ -75,4 +75,13 @@ export class MenuTemplateServiceImp implements MenuTemplateService {
       return error as ErrorResponseDto;
     }
   };
+
+  deleteMenuTemplate = async (id: number): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<any>(`/menu-templates/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
 }

@@ -32,6 +32,7 @@ import { Toast } from "primereact/toast";
 import { TreeNode } from "primereact/treenode";
 import { Tooltip } from "primereact/tooltip";
 import EditMenuTemplate from "./edit/edit";
+import DeleteMenuTemplate from "./delete/delete";
 
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
@@ -56,6 +57,9 @@ export default function MenuPage() {
 
   const [editDialog, setEditDialog] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MenuTemplateResponseDto | null>(null);
+
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deletingTemplate, setDeletingTemplate] = useState<MenuTemplateResponseDto | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -186,6 +190,30 @@ export default function MenuPage() {
     setEditDialog(true);
   };
 
+  const openDelete = (template: MenuTemplateResponseDto) => {
+    setDeletingTemplate(template);
+    setDeleteDialog(true);
+  };
+
+  const deleteMenuTemplate = async (id: number) => {
+    const res = await menuTemplateService.deleteMenuTemplate(id);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Menu Template Deleted",
+      });
+      loadTemplates();
+    }
+  };
+
   const updateMenuTemplate = async (id: number, name: string, tree: string) => {
     const { MenuTemplateUpdateRequestDto } = await import("./dtos/menu-template-update-request.dto");
     
@@ -258,6 +286,9 @@ export default function MenuPage() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(rowData)}
+          tooltip="Delete Template"
+          tooltipOptions={{ position: "top" }}
         />
       </div>
     );
@@ -411,6 +442,14 @@ export default function MenuPage() {
         onUpdate={updateMenuTemplate}
         template={editingTemplate}
         availableMenuNodes={treeNodes}
+      />
+
+      {/* DELETE DIALOG */}
+      <DeleteMenuTemplate
+        visible={deleteDialog}
+        onHide={() => setDeleteDialog(false)}
+        onDelete={deleteMenuTemplate}
+        menuTemplate={deletingTemplate}
       />
     </div>
   );

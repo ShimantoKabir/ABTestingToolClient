@@ -33,6 +33,11 @@ export interface MenuTemplateService {
     id: number,
     request: MenuTemplateUpdateRequestDto
   ) => Promise<any | ErrorResponseDto>;
+
+  /**
+   * Deletes a menu template.
+   */
+  deleteMenuTemplate: (id: number) => Promise<any | ErrorResponseDto>;
 }
 
 export const MenuTemplateServiceToken = Symbol("MenuTemplateService");

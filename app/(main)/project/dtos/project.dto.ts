@@ -32,3 +32,21 @@ export class ProjectAssignUserResponseDto {
 export class ProjectRemoveUserResponseDto {
   message: string = "";
 }
+
+// For updating a project (Request) - PATCH operation
+export class ProjectUpdateRequestDto {
+  name?: string = "";
+  description?: string = "";
+}
+
+// For updating a project (Response)
+export class ProjectUpdateResponseDto {
+  id: number = 0;
+  name: string = "";
+  description?: string = "";
+}
+
+// For deleting a project (Response)
+export class ProjectDeleteResponseDto {
+  message: string = "";
+}

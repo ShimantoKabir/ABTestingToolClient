@@ -10,6 +10,7 @@ import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
 import { RoleUpdateRequestDto } from "./dtos/role-update-request.dto";
 import EditRole from "./edit/edit";
 import DeleteRole from "./delete/delete";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 // PrimeReact Imports
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -22,7 +23,7 @@ import { classNames } from "primereact/utils";
 
 export default function Role() {
   const roleService = container.get<RoleService>(RoleServiceToken);
-  const toast = useRef<Toast>(null);
+  const toast = useRef<Toast>(null) as React.RefObject<Toast>;
 
   // 1. Update State to use new RoleResponseDto
   const [roles, setRoles] = useState<RoleResponseDto[]>([]);
@@ -85,8 +86,11 @@ export default function Role() {
   };
 
   const openEdit = (role: RoleResponseDto) => {
-    setSelectedRole(role);
-    setEditRoleDialog(true);
+    console.log('Selected Role for Edit:', role);
+    if (PermissionUtils.canModifyRole(role, toast)) {
+      setSelectedRole(role);
+      setEditRoleDialog(true);
+    }
   };
 
   const hideDialog = () => {
@@ -100,8 +104,10 @@ export default function Role() {
   };
 
   const openDelete = (role: RoleResponseDto) => {
-    setRoleToDelete(role);
-    setDeleteRoleDialog(true);
+    if (PermissionUtils.canModifyRole(role, toast)) {
+      setRoleToDelete(role);
+      setDeleteRoleDialog(true);
+    }
   };
 
   const hideDeleteDialog = () => {

@@ -5,8 +5,11 @@ import {
   ProjectAssignUserResponseDto,
   ProjectCreateRequestDto,
   ProjectCreateResponseDto,
+  ProjectDeleteResponseDto,
   ProjectRemoveUserResponseDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
+  ProjectUpdateResponseDto,
 } from "../dtos/project.dto";
 
 export interface ProjectService {
@@ -42,6 +45,23 @@ export interface ProjectService {
     projectId: number,
     userId: number
   ) => Promise<ProjectRemoveUserResponseDto | ErrorResponseDto>;
+
+  /**
+   * Update a project using PATCH method.
+   * Endpoint: PATCH /projects/{id}
+   */
+  updateProject: (
+    projectId: number,
+    request: ProjectUpdateRequestDto
+  ) => Promise<ProjectUpdateResponseDto | ErrorResponseDto>;
+
+  /**
+   * Delete a project using DELETE method.
+   * Endpoint: DELETE /projects/{id}
+   */
+  deleteProject: (
+    projectId: number
+  ) => Promise<ProjectDeleteResponseDto | ErrorResponseDto>;
 }
 
 export const ProjectServiceToken = Symbol("ProjectService");

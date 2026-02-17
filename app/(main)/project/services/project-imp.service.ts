@@ -13,8 +13,11 @@ import {
   ProjectAssignUserResponseDto,
   ProjectCreateRequestDto,
   ProjectCreateResponseDto,
+  ProjectDeleteResponseDto,
   ProjectRemoveUserResponseDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
+  ProjectUpdateResponseDto,
 } from "../dtos/project.dto";
 
 @injectable()
@@ -102,6 +105,36 @@ export class ProjectServiceImp implements ProjectService {
       // DELETE /projects/{projectId}/users/{userId}
       const response = await api.delete<ProjectRemoveUserResponseDto>(
         `/projects/${projectId}/users/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  updateProject = async (
+    projectId: number,
+    request: ProjectUpdateRequestDto
+  ): Promise<ProjectUpdateResponseDto | ErrorResponseDto> => {
+    try {
+      // PATCH /projects/{id}
+      const response = await api.patch<ProjectUpdateResponseDto>(
+        `/projects/${projectId}`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteProject = async (
+    projectId: number
+  ): Promise<ProjectDeleteResponseDto | ErrorResponseDto> => {
+    try {
+      // DELETE /projects/{id}
+      const response = await api.delete<ProjectDeleteResponseDto>(
+        `/projects/${projectId}`
       );
       return response.data;
     } catch (error) {

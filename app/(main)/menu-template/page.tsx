@@ -33,6 +33,7 @@ import { TreeNode } from "primereact/treenode";
 import { Tooltip } from "primereact/tooltip";
 import EditMenuTemplate from "./edit/edit";
 import DeleteMenuTemplate from "./delete/delete";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
@@ -40,7 +41,7 @@ export default function MenuPage() {
     MenuTemplateServiceToken
   );
 
-  const toast = useRef<Toast>(null);
+  const toast = useRef<Toast>(null) as React.RefObject<Toast>;
 
   const [templates, setTemplates] = useState<MenuTemplateResponseDto[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -171,6 +172,10 @@ export default function MenuPage() {
   };
 
   const openEdit = async (template: MenuTemplateResponseDto) => {
+    if (!PermissionUtils.canModifyMenuTemplate(template, toast)) {
+      return;
+    }
+
     // Load available menu nodes if not already loaded
     if (treeNodes.length === 0) {
       const rawNodes = await menuService.getMenuJson();
@@ -191,6 +196,10 @@ export default function MenuPage() {
   };
 
   const openDelete = (template: MenuTemplateResponseDto) => {
+    if (!PermissionUtils.canModifyMenuTemplate(template, toast)) {
+      return;
+    }
+
     setDeletingTemplate(template);
     setDeleteDialog(true);
   };

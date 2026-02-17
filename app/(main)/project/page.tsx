@@ -12,8 +12,13 @@ import {
 import {
   ProjectCreateRequestDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
 } from "./dtos/project.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
+
+// Components
+import DeleteProject from "./delete/delete";
+import EditProject from "./edit/edit";
 
 // PrimeReact
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -38,6 +43,14 @@ export default function ProjectPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+
+  // --- Edit Dialog State ---
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectResponseDto | null>(null);
+
+  // --- Delete Dialog State ---
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<ProjectResponseDto | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -109,6 +122,82 @@ export default function ProjectPage() {
     }
   };
 
+  const openEdit = (project: ProjectResponseDto) => {
+    setEditingProject(project);
+    setShowEditDialog(true);
+  };
+
+  const updateProject = async (id: number, name: string, description: string) => {
+    if (!editingProject) return;
+
+    const request = new ProjectUpdateRequestDto();
+    
+    // Only include fields that have changed
+    if (name !== editingProject.name) {
+      request.name = name;
+    }
+    if (description !== (editingProject.description || "")) {
+      request.description = description;
+    }
+
+    // If nothing changed, just return
+    if (!request.name && !request.description) {
+      return;
+    }
+
+    const res = await projectService.updateProject(id, request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project updated successfully",
+      });
+      setShowEditDialog(false);
+      loadProjects(); // Refresh table
+    }
+  };
+
+  const hideEditDialog = () => {
+    setShowEditDialog(false);
+    setEditingProject(null);
+  };
+
+  const openDelete = (project: ProjectResponseDto) => {
+    setProjectToDelete(project);
+    setShowDeleteDialog(true);
+  };
+
+  const hideDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setProjectToDelete(null);
+  };
+
+  const deleteProject = async (id: number) => {
+    const res = await projectService.deleteProject(id);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project deleted successfully",
+      });
+      loadProjects(); // Refresh table
+    }
+  };
+
   // --- Renderers ---
   const indexBody = (rowData: any, props: any) => props.rowIndex + 1;
 
@@ -121,6 +210,7 @@ export default function ProjectPage() {
           text
           severity="info"
           aria-label="Edit"
+          onClick={() => openEdit(rowData)}
         />
       </div>
     );
@@ -135,6 +225,7 @@ export default function ProjectPage() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(rowData)}
         />
       </div>
     );
@@ -151,6 +242,7 @@ export default function ProjectPage() {
       <Button label="Save" icon="pi pi-check" onClick={saveProject} autoFocus />
     </div>
   );
+
 
   return (
     <div className="grid p-fluid p-4">
@@ -238,6 +330,20 @@ export default function ProjectPage() {
           </div>
         </div>
       </Dialog>
+
+      <EditProject
+        visible={showEditDialog}
+        onHide={hideEditDialog}
+        onUpdate={updateProject}
+        project={editingProject}
+      />
+
+      <DeleteProject
+        visible={showDeleteDialog}
+        onHide={hideDeleteDialog}
+        onDelete={deleteProject}
+        project={projectToDelete}
+      />
     </div>
   );
 }

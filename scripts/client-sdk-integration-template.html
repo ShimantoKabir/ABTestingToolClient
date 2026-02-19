@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://ab-server-live-115286204440.us-central1.run.app/static/client-sdk.js"></script>
+  </head>
+  <body>
+    <script>
+      // Wait for window load if you are still getting errors
+      window.addEventListener("load", () => {
+        if (typeof ABTestingClient === "undefined") {
+          console.error("SDK failed to load!");
+          return;
+        }
+
+        window.abClient = new ABTestingClient({
+          serverBaseUrl:
+            "https://ab-server-live-115286204440.us-central1.run.app",
+          projectId: 1,
+        });
+
+        window.abClient.init();
+      });
+    </script>
+  </body>
+</html>

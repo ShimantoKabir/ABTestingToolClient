@@ -53,17 +53,8 @@ export default function EditProject({
 
   const dialogFooter = (
     <React.Fragment>
-      <Button
-        label="Cancel"
-        icon="pi pi-times"
-        outlined
-        onClick={handleHide}
-      />
-      <Button
-        label="Update"
-        icon="pi pi-check"
-        onClick={handleSubmit}
-      />
+      <Button label="Cancel" icon="pi pi-times" outlined onClick={handleHide} />
+      <Button label="Update" icon="pi pi-check" onClick={handleSubmit} />
     </React.Fragment>
   );
 
@@ -95,7 +86,7 @@ export default function EditProject({
           <small className="p-error">Name is required.</small>
         )}
       </div>
-      
+
       <div className="field">
         <label htmlFor="editDescription" className="font-bold">
           Description

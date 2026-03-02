@@ -36,12 +36,13 @@ import { Dropdown } from "primereact/dropdown";
 import { InputSwitch } from "primereact/inputswitch";
 import { Toast } from "primereact/toast";
 import { Tag } from "primereact/tag";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 export default function UserPage() {
   const userService = container.get<UserService>(UserServiceToken);
   const roleService = container.get<RoleService>(RoleServiceToken);
   const menuTemplateService = container.get<MenuTemplateService>(
-    MenuTemplateServiceToken
+    MenuTemplateServiceToken,
   );
   const projectService = container.get<ProjectService>(ProjectServiceToken);
 
@@ -66,7 +67,7 @@ export default function UserPage() {
   const [showEditDialog, setEditShowDialog] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number>(0);
   const [roleDropdown, setRoleDropdown] = useState<RoleResponseDto>(
-    new RoleResponseDto()
+    new RoleResponseDto(),
   );
   const [menuTemplateDropdown, setMenuTemplateDropdown] =
     useState<MenuTemplateResponseDto>(new MenuTemplateResponseDto());
@@ -79,7 +80,7 @@ export default function UserPage() {
 
   // Selection States
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -127,14 +128,10 @@ export default function UserPage() {
 
   // --- Edit User Logic ---
   const openEditDialog = (user: UserResponseDto) => {
-    if (user.super) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Cannot edit super user",
-      });
+    if (!PermissionUtils.canModifyUser(user.super, toast)) {
       return;
     }
+
     setEditingUserId(user.id);
     setRoleDropdown({ id: user.roleId || 0, name: user.roleName || "" });
     setMenuTemplateDropdown({
@@ -173,14 +170,8 @@ export default function UserPage() {
   };
 
   // --- Project Management Logic ---
-
   const openProjectDialog = async (user: UserResponseDto) => {
-    if (user.super) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Cannot modify super user projects!",
-      });
+    if (!PermissionUtils.canModifyUserProjects(user.super, toast)) {
       return;
     }
 
@@ -210,7 +201,7 @@ export default function UserPage() {
 
     const res = await projectService.assignUserToProject(
       selectedProjectId,
-      request
+      request,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -226,7 +217,7 @@ export default function UserPage() {
         detail: "Project assigned",
       });
       const updatedList = await projectService.getUserProjectsByUserIdAndOrgId(
-        projectUser.id
+        projectUser.id,
       );
       if (!(updatedList instanceof ErrorResponseDto)) {
         setUserProjects(updatedList);
@@ -240,7 +231,7 @@ export default function UserPage() {
 
     const res = await projectService.removeUserFromProject(
       project.id,
-      projectUser.id
+      projectUser.id,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -436,11 +427,11 @@ export default function UserPage() {
           <div className="flex align-items-center gap-3">
             <InputSwitch
               inputId="status"
-              checked={disabled}
-              onChange={(e) => setDisabled(e.value)}
+              checked={!disabled}
+              onChange={(e) => setDisabled(!e.value)}
             />
             <label htmlFor="status" className="font-bold">
-              {disabled ? "Disabled" : "Active"}
+              {disabled ? "Inactive" : "Active"}
             </label>
           </div>
         </div>

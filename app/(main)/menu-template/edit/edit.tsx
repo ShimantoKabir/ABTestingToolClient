@@ -7,7 +7,7 @@ import { Button } from "primereact/button";
 import { classNames } from "primereact/utils";
 import { Tree } from "primereact/tree";
 import { TreeNode } from "primereact/treenode";
-import { addActionsAsChildren, recoverTreeFromSelection } from "../utils/menu-tree.utils";
+import { recoverTreeFromSelection } from "../utils/menu-tree.utils";
 
 interface EditMenuTemplateProps {
   visible: boolean;
@@ -36,7 +36,10 @@ export default function EditMenuTemplate({
       try {
         const parsedTree = JSON.parse(template.tree);
         // Convert the saved tree back to selection keys
-        const selectionKeys = convertTreeToSelectionKeys(parsedTree, availableMenuNodes);
+        const selectionKeys = convertTreeToSelectionKeys(
+          parsedTree,
+          availableMenuNodes,
+        );
         setSelectedKeys(selectionKeys);
       } catch (error) {
         console.error("Error parsing template tree:", error);
@@ -47,42 +50,82 @@ export default function EditMenuTemplate({
   }, [template, visible, availableMenuNodes]);
 
   // Helper function to convert saved tree back to selection keys
-  const convertTreeToSelectionKeys = (savedTree: any[], availableNodes: TreeNode[]): any => {
+  const convertTreeToSelectionKeys = (
+    savedTree: any[],
+    availableNodes: TreeNode[],
+  ): any => {
     const selectionKeys: any = {};
-    
-    const traverseAndMark = (nodes: any[], availableNodes: TreeNode[]) => {
-      nodes.forEach(node => {
-        const correspondingNode = availableNodes.find(avail => avail.key === node.key);
+
+    // Recursive helper to traverse the saved tree and match against available visual nodes
+    const traverseAndMark = (savedNodes: any[], visualNodes: TreeNode[]) => {
+      savedNodes.forEach((savedNode) => {
+        // 1. Find the corresponding node in the current level of availableNodes
+        const correspondingNode = visualNodes.find(
+          (avail) => avail.key === savedNode.key,
+        );
+
         if (correspondingNode) {
+          // Mark the current node as checked
           selectionKeys[correspondingNode.key as string] = { checked: true };
-          
-          // Mark parent nodes as partially checked if needed
-          let parent = findParentNode(correspondingNode.key as string, availableNodes);
-          while (parent) {
-            if (selectionKeys[parent.key as string]) {
-              selectionKeys[parent.key as string] = { partialChecked: true };
-            } else {
-              selectionKeys[parent.key as string] = { partialChecked: true };
-            }
-            parent = findParentNode(parent.key as string, availableNodes);
+
+          // 2. Handle Actions (Leaf nodes in the visual availableNodes)
+          // These are stored in savedNode.data.actions but exist as children in availableNodes
+          if (savedNode.data?.actions && correspondingNode.children) {
+            savedNode.data.actions.forEach((actionName: string) => {
+              const actionNode = correspondingNode.children?.find(
+                (child) =>
+                  child.data?.isAction && child.data?.actionName === actionName,
+              );
+
+              if (actionNode && actionNode.key) {
+                selectionKeys[actionNode.key as string] = { checked: true };
+              }
+            });
           }
-        }
-        
-        if (node.children && node.children.length > 0) {
-          traverseAndMark(node.children, availableNodes);
+
+          // 3. Mark parent hierarchy as partially checked
+          let parent = findParentNode(
+            correspondingNode.key as string,
+            availableMenuNodes,
+          );
+          while (parent) {
+            const parentKey = parent.key as string;
+            // Only set to partial if not already fully checked
+            if (!selectionKeys[parentKey]?.checked) {
+              selectionKeys[parentKey] = { partialChecked: true };
+            }
+            parent = findParentNode(parentKey, availableMenuNodes);
+          }
+
+          // 4. Unlimited Depth Recursion
+          // If the saved node has children, recurse into them.
+          // We filter correspondingNode.children to only look at sub-menus (non-actions)
+          if (
+            savedNode.children &&
+            savedNode.children.length > 0 &&
+            correspondingNode.children
+          ) {
+            const subMenuAvailableNodes = correspondingNode.children.filter(
+              (c) => !c.data?.isAction,
+            );
+            traverseAndMark(savedNode.children, subMenuAvailableNodes);
+          }
         }
       });
     };
-    
+
     traverseAndMark(savedTree, availableNodes);
     return selectionKeys;
   };
 
   // Helper function to find parent node
-  const findParentNode = (nodeKey: string, nodes: TreeNode[]): TreeNode | null => {
+  const findParentNode = (
+    nodeKey: string,
+    nodes: TreeNode[],
+  ): TreeNode | null => {
     for (const node of nodes) {
       if (node.children) {
-        if (node.children.some(child => child.key === nodeKey)) {
+        if (node.children.some((child) => child.key === nodeKey)) {
           return node;
         }
         const found = findParentNode(nodeKey, node.children);
@@ -97,7 +140,10 @@ export default function EditMenuTemplate({
     setLoading(true);
 
     if (templateName.trim() && selectedKeys && template) {
-      const cleanTree = recoverTreeFromSelection(availableMenuNodes, selectedKeys);
+      const cleanTree = recoverTreeFromSelection(
+        availableMenuNodes,
+        selectedKeys,
+      );
       await onUpdate(template.id, templateName, JSON.stringify(cleanTree));
       setTemplateName("");
       setSelectedKeys(null);
@@ -157,7 +203,9 @@ export default function EditMenuTemplate({
             onChange={(e) => setTemplateName(e.target.value)}
             required
             autoFocus
-            className={classNames({ "p-invalid": submitted && !templateName.trim() })}
+            className={classNames({
+              "p-invalid": submitted && !templateName.trim(),
+            })}
           />
           {submitted && !templateName.trim() && (
             <small className="p-error">Template name is required.</small>
@@ -182,7 +230,9 @@ export default function EditMenuTemplate({
             />
           </div>
           {submitted && !selectedKeys && (
-            <small className="p-error">Please select at least one menu item.</small>
+            <small className="p-error">
+              Please select at least one menu item.
+            </small>
           )}
         </div>
       </div>

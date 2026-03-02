@@ -38,7 +38,7 @@ import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
   const menuTemplateService = container.get<MenuTemplateService>(
-    MenuTemplateServiceToken
+    MenuTemplateServiceToken,
   );
 
   const toast = useRef<Toast>(null) as React.RefObject<Toast>;
@@ -57,10 +57,12 @@ export default function MenuPage() {
   const [viewNodes, setViewNodes] = useState<TreeNode[]>([]);
 
   const [editDialog, setEditDialog] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<MenuTemplateResponseDto | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<MenuTemplateResponseDto | null>(null);
 
   const [deleteDialog, setDeleteDialog] = useState(false);
-  const [deletingTemplate, setDeletingTemplate] = useState<MenuTemplateResponseDto | null>(null);
+  const [deletingTemplate, setDeletingTemplate] =
+    useState<MenuTemplateResponseDto | null>(null);
 
   useEffect(() => {
     loadTemplates();
@@ -70,7 +72,7 @@ export default function MenuPage() {
     setLoading(true);
     const res = await menuTemplateService.getMenuTemplates(
       lazyParams.page,
-      lazyParams.rows
+      lazyParams.rows,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -190,7 +192,7 @@ export default function MenuPage() {
       const visualNodes = addActionsAsChildren(rawNodes as any[]);
       setTreeNodes(visualNodes);
     }
-    
+
     setEditingTemplate(template);
     setEditDialog(true);
   };
@@ -224,8 +226,9 @@ export default function MenuPage() {
   };
 
   const updateMenuTemplate = async (id: number, name: string, tree: string) => {
-    const { MenuTemplateUpdateRequestDto } = await import("./dtos/menu-template-update-request.dto");
-    
+    const { MenuTemplateUpdateRequestDto } =
+      await import("./dtos/menu-template-update-request.dto");
+
     const request = new MenuTemplateUpdateRequestDto();
     request.name = name;
     request.tree = tree;

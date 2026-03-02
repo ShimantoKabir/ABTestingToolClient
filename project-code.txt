@@ -2925,7 +2925,7 @@ export class ConditionCreateRequestDto {
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\condition\page.tsx
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 
 import {
@@ -2969,8 +2969,8 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function ConditionPage(props: Props) {
-  const params = await props.params;
+export default function ConditionPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const conditionService = container.get<ConditionService>(
     ConditionServiceToken,
@@ -3246,6 +3246,7 @@ export default async function ConditionPage(props: Props) {
                     }
                     className="p-inputtext-sm w-full"
                     placeholder="Press enter to add URL"
+                    separator=","
                   />
                   {condition.urls.length === 0 && (
                     <small className="text-pink-500">
@@ -3411,7 +3412,7 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\layout.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { TabMenu } from "primereact/tabmenu";
 import { container } from "@/app/di";
@@ -3422,7 +3423,7 @@ import {
 import { ExperimentResponseDto } from "../dtos/experiment.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 
-export default async function ExperimentDetailLayout({
+export default function ExperimentDetailLayout({
   children,
   params,
 }: {
@@ -3437,7 +3438,7 @@ export default async function ExperimentDetailLayout({
     null,
   );
 
-  const { id } = await params;
+  const { id } = use(params);
   const expId = parseInt(id);
 
   useEffect(() => {
@@ -3624,7 +3625,7 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\metrics\page.tsx
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   MetricsService,
@@ -3658,8 +3659,8 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function MetricsPage(props: Props) {
-  const params = await props.params;
+export default function MetricsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<MetricsService>(MetricsServiceToken);
   const cookieService = container.get<CookieService>(CookieServiceToken);
@@ -4138,7 +4139,7 @@ export class VariationStatsDto {
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\results\page.tsx
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
@@ -4162,11 +4163,12 @@ import {
   ExperimentServiceToken,
 } from "../../services/experiment.service";
 
-interface ResultsPageProps {
+interface Props {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function ResultsPage({ params }: ResultsPageProps) {
+export default function ResultsPage(props: Props) {
   const [expId, setExpId] = useState<number>(0);
   const resultsService = container.get<ResultsService>(ResultsServiceToken);
   const experimentService = container.get<ExperimentService>(
@@ -4180,15 +4182,16 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [loading, setLoading] = useState(true);
   const [experimentName, setExperimentName] = useState("");
 
+  const params = use(props.params);
+  const propExpId = parseInt(params.id);
+
   useEffect(() => {
     const initParams = async () => {
-      const resolvedParams = await params;
-      const id = parseInt(resolvedParams.id);
-      setExpId(id);
-      loadData(id);
+      setExpId(propExpId);
+      loadData(propExpId);
     };
     initParams();
-  }, [params]);
+  }, [propExpId]);
 
   const loadData = async (experimentId: number) => {
     setLoading(true);
@@ -4507,7 +4510,7 @@ export const ResultsServiceToken = Symbol("ResultsService");
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\settings\page.tsx
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   ExperimentService,
@@ -4531,8 +4534,8 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function ExperimentSettingsPage(props: Props) {
-  const params = await props.params;
+export default function ExperimentSettingsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<ExperimentService>(ExperimentServiceToken);
   const toast = useRef<Toast>(null);
@@ -4744,7 +4747,7 @@ export class VariationTrafficDto {
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\traffic\page.tsx
 "use client";
 import "./traffic.scss";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 // UPDATED IMPORTS
 import {
@@ -4771,8 +4774,8 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function TrafficPage(props: Props) {
-  const params = await props.params;
+export default function TrafficPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const trafficService = container.get<TrafficService>(TrafficServiceToken);
   const variationService = container.get<VariationService>(
@@ -5034,7 +5037,7 @@ export class VariationTrafficDto {
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\experiment\[id]\variation\page.tsx
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
 import {
   VariationService,
@@ -5063,8 +5066,8 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function VariationsPage(props: Props) {
-  const params = await props.params;
+export default function VariationsPage(props: Props) {
+  const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<VariationService>(VariationServiceToken);
   const toast = useRef<Toast>(null);
@@ -5608,6 +5611,82 @@ export default function MainLayout({
 }
 
 
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\delete\delete.tsx
+"use client";
+import React from "react";
+import { MenuTemplateResponseDto } from "../dtos/menu-template.dto";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
+
+interface DeleteMenuTemplateProps {
+  visible: boolean;
+  onHide: () => void;
+  onDelete: (id: number) => Promise<void>;
+  menuTemplate: MenuTemplateResponseDto | null;
+}
+
+export default function DeleteMenuTemplate({
+  visible,
+  onHide,
+  onDelete,
+  menuTemplate,
+}: DeleteMenuTemplateProps) {
+  const handleConfirm = async () => {
+    if (menuTemplate) {
+      await onDelete(menuTemplate.id);
+      onHide();
+    }
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        outlined
+        onClick={onHide}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        severity="danger"
+        onClick={handleConfirm}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "32rem" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Confirm"
+      modal
+      draggable={false}
+      footer={dialogFooter}
+      onHide={onHide}
+    >
+      <div className="confirmation-content flex items-center">
+        <i
+          className="pi pi-exclamation-triangle mr-3"
+          style={{ fontSize: "2rem" }}
+        />
+        {menuTemplate && (
+          <span>
+            Are you sure you want to delete <b>{menuTemplate.name}</b>?
+          </span>
+        )}
+      </div>
+    </Dialog>
+  );
+}
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\dtos\menu-template-update-request.dto.ts
+export class MenuTemplateUpdateRequestDto {
+  name: string = "";
+  tree: string = "";
+}
+
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\dtos\menu-template.dto.ts
 // 1. For Listing (GET /all)
 export class MenuTemplateResponseDto {
@@ -5632,6 +5711,199 @@ export class MenuTemplateCreateResponseDto {
   tree: string = "";
 }
 
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\edit\edit.tsx
+"use client";
+import React, { useState, useEffect } from "react";
+import { MenuTemplateResponseDto } from "../dtos/menu-template.dto";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { classNames } from "primereact/utils";
+import { Tree } from "primereact/tree";
+import { TreeNode } from "primereact/treenode";
+import { addActionsAsChildren, recoverTreeFromSelection } from "../utils/menu-tree.utils";
+
+interface EditMenuTemplateProps {
+  visible: boolean;
+  onHide: () => void;
+  onUpdate: (id: number, name: string, tree: string) => Promise<void>;
+  template: MenuTemplateResponseDto | null;
+  availableMenuNodes: TreeNode[];
+}
+
+export default function EditMenuTemplate({
+  visible,
+  onHide,
+  onUpdate,
+  template,
+  availableMenuNodes,
+}: EditMenuTemplateProps) {
+  const [templateName, setTemplateName] = useState<string>("");
+  const [selectedKeys, setSelectedKeys] = useState<any>(null);
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (template && visible) {
+      setTemplateName(template.name);
+      // Parse the existing tree and set selected keys
+      try {
+        const parsedTree = JSON.parse(template.tree);
+        // Convert the saved tree back to selection keys
+        const selectionKeys = convertTreeToSelectionKeys(parsedTree, availableMenuNodes);
+        setSelectedKeys(selectionKeys);
+      } catch (error) {
+        console.error("Error parsing template tree:", error);
+        setSelectedKeys(null);
+      }
+      setSubmitted(false);
+    }
+  }, [template, visible, availableMenuNodes]);
+
+  // Helper function to convert saved tree back to selection keys
+  const convertTreeToSelectionKeys = (savedTree: any[], availableNodes: TreeNode[]): any => {
+    const selectionKeys: any = {};
+    
+    const traverseAndMark = (nodes: any[], availableNodes: TreeNode[]) => {
+      nodes.forEach(node => {
+        const correspondingNode = availableNodes.find(avail => avail.key === node.key);
+        if (correspondingNode) {
+          selectionKeys[correspondingNode.key as string] = { checked: true };
+          
+          // Mark parent nodes as partially checked if needed
+          let parent = findParentNode(correspondingNode.key as string, availableNodes);
+          while (parent) {
+            if (selectionKeys[parent.key as string]) {
+              selectionKeys[parent.key as string] = { partialChecked: true };
+            } else {
+              selectionKeys[parent.key as string] = { partialChecked: true };
+            }
+            parent = findParentNode(parent.key as string, availableNodes);
+          }
+        }
+        
+        if (node.children && node.children.length > 0) {
+          traverseAndMark(node.children, availableNodes);
+        }
+      });
+    };
+    
+    traverseAndMark(savedTree, availableNodes);
+    return selectionKeys;
+  };
+
+  // Helper function to find parent node
+  const findParentNode = (nodeKey: string, nodes: TreeNode[]): TreeNode | null => {
+    for (const node of nodes) {
+      if (node.children) {
+        if (node.children.some(child => child.key === nodeKey)) {
+          return node;
+        }
+        const found = findParentNode(nodeKey, node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    setSubmitted(true);
+    setLoading(true);
+
+    if (templateName.trim() && selectedKeys && template) {
+      const cleanTree = recoverTreeFromSelection(availableMenuNodes, selectedKeys);
+      await onUpdate(template.id, templateName, JSON.stringify(cleanTree));
+      setTemplateName("");
+      setSelectedKeys(null);
+      setSubmitted(false);
+      setLoading(false);
+      onHide();
+    } else {
+      setLoading(false);
+    }
+  };
+
+  const handleHide = () => {
+    setTemplateName("");
+    setSelectedKeys(null);
+    setSubmitted(false);
+    onHide();
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        outlined
+        onClick={handleHide}
+        disabled={loading}
+      />
+      <Button
+        label="Update"
+        icon="pi pi-check"
+        onClick={handleSubmit}
+        loading={loading}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "50vw" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Edit Menu Template"
+      modal
+      draggable={false}
+      className="p-fluid"
+      footer={dialogFooter}
+      onHide={handleHide}
+    >
+      <div className="flex flex-column gap-3">
+        <div className="field">
+          <label htmlFor="editName" className="font-bold">
+            Template Name
+          </label>
+          <InputText
+            id="editName"
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+            required
+            autoFocus
+            className={classNames({ "p-invalid": submitted && !templateName.trim() })}
+          />
+          {submitted && !templateName.trim() && (
+            <small className="p-error">Template name is required.</small>
+          )}
+        </div>
+
+        <div className="field">
+          <label className="font-bold">Select Menus & Actions</label>
+          <div
+            className="card border-none p-0"
+            style={{ maxHeight: "400px", overflowY: "auto" }}
+          >
+            <Tree
+              value={availableMenuNodes}
+              selectionMode="checkbox"
+              selectionKeys={selectedKeys}
+              onSelectionChange={(e) => setSelectedKeys(e.value)}
+              filter
+              filterMode="lenient"
+              filterPlaceholder="Search menu items..."
+              className="w-full border-none p-0"
+            />
+          </div>
+          {submitted && !selectedKeys && (
+            <small className="p-error">Please select at least one menu item.</small>
+          )}
+        </div>
+      </div>
+    </Dialog>
+  );
+}
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\page.tsx
 "use client";
@@ -5667,14 +5939,17 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { TreeNode } from "primereact/treenode";
 import { Tooltip } from "primereact/tooltip";
+import EditMenuTemplate from "./edit/edit";
+import DeleteMenuTemplate from "./delete/delete";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 export default function MenuPage() {
   const menuService = container.get<MenuService>(MenuServiceToken);
   const menuTemplateService = container.get<MenuTemplateService>(
-    MenuTemplateServiceToken
+    MenuTemplateServiceToken,
   );
 
-  const toast = useRef<Toast>(null);
+  const toast = useRef<Toast>(null) as React.RefObject<Toast>;
 
   const [templates, setTemplates] = useState<MenuTemplateResponseDto[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -5689,6 +5964,14 @@ export default function MenuPage() {
   const [viewDialog, setViewDialog] = useState(false);
   const [viewNodes, setViewNodes] = useState<TreeNode[]>([]);
 
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingTemplate, setEditingTemplate] =
+    useState<MenuTemplateResponseDto | null>(null);
+
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deletingTemplate, setDeletingTemplate] =
+    useState<MenuTemplateResponseDto | null>(null);
+
   useEffect(() => {
     loadTemplates();
   }, [lazyParams]);
@@ -5697,7 +5980,7 @@ export default function MenuPage() {
     setLoading(true);
     const res = await menuTemplateService.getMenuTemplates(
       lazyParams.page,
-      lazyParams.rows
+      lazyParams.rows,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -5798,6 +6081,84 @@ export default function MenuPage() {
     }
   };
 
+  const openEdit = async (template: MenuTemplateResponseDto) => {
+    if (!PermissionUtils.canModifyMenuTemplate(template, toast)) {
+      return;
+    }
+
+    // Load available menu nodes if not already loaded
+    if (treeNodes.length === 0) {
+      const rawNodes = await menuService.getMenuJson();
+      if (rawNodes instanceof ErrorResponseDto) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: rawNodes.message,
+        });
+        return;
+      }
+      const visualNodes = addActionsAsChildren(rawNodes as any[]);
+      setTreeNodes(visualNodes);
+    }
+
+    setEditingTemplate(template);
+    setEditDialog(true);
+  };
+
+  const openDelete = (template: MenuTemplateResponseDto) => {
+    if (!PermissionUtils.canModifyMenuTemplate(template, toast)) {
+      return;
+    }
+
+    setDeletingTemplate(template);
+    setDeleteDialog(true);
+  };
+
+  const deleteMenuTemplate = async (id: number) => {
+    const res = await menuTemplateService.deleteMenuTemplate(id);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Menu Template Deleted",
+      });
+      loadTemplates();
+    }
+  };
+
+  const updateMenuTemplate = async (id: number, name: string, tree: string) => {
+    const { MenuTemplateUpdateRequestDto } =
+      await import("./dtos/menu-template-update-request.dto");
+
+    const request = new MenuTemplateUpdateRequestDto();
+    request.name = name;
+    request.tree = tree;
+
+    const res = await menuTemplateService.updateMenuTemplate(id, request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Menu Template Updated",
+      });
+      loadTemplates();
+    }
+  };
+
   const indexBodyTemplate = (rowData: MenuTemplateResponseDto, props: any) => {
     return props.rowIndex + 1;
   };
@@ -5828,6 +6189,9 @@ export default function MenuPage() {
           text
           severity="info"
           aria-label="Update"
+          onClick={() => openEdit(rowData)}
+          tooltip="Edit Template"
+          tooltipOptions={{ position: "top" }}
         />
       </div>
     );
@@ -5842,6 +6206,9 @@ export default function MenuPage() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(rowData)}
+          tooltip="Delete Template"
+          tooltipOptions={{ position: "top" }}
         />
       </div>
     );
@@ -5987,6 +6354,23 @@ export default function MenuPage() {
           />
         </div>
       </Dialog>
+
+      {/* EDIT DIALOG */}
+      <EditMenuTemplate
+        visible={editDialog}
+        onHide={() => setEditDialog(false)}
+        onUpdate={updateMenuTemplate}
+        template={editingTemplate}
+        availableMenuNodes={treeNodes}
+      />
+
+      {/* DELETE DIALOG */}
+      <DeleteMenuTemplate
+        visible={deleteDialog}
+        onHide={() => setDeleteDialog(false)}
+        onDelete={deleteMenuTemplate}
+        menuTemplate={deletingTemplate}
+      />
     </div>
   );
 }
@@ -6008,6 +6392,7 @@ import {
   MenuTemplateCreateResponseDto,
   MenuTemplateResponseDto,
 } from "../dtos/menu-template.dto";
+import { MenuTemplateUpdateRequestDto } from "../dtos/menu-template-update-request.dto";
 
 @injectable()
 export class MenuTemplateServiceImp implements MenuTemplateService {
@@ -6054,8 +6439,31 @@ export class MenuTemplateServiceImp implements MenuTemplateService {
       return error as ErrorResponseDto;
     }
   };
-}
 
+  updateMenuTemplate = async (
+    id: number,
+    request: MenuTemplateUpdateRequestDto
+  ): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.patch<any>(`/menu-templates/${id}`, {
+        name: request.name,
+        tree: request.tree,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteMenuTemplate = async (id: number): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<any>(`/menu-templates/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+}
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\services\menu-template.service.ts
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
@@ -6065,6 +6473,7 @@ import {
   MenuTemplateCreateResponseDto,
   MenuTemplateResponseDto,
 } from "../dtos/menu-template.dto";
+import { MenuTemplateUpdateRequestDto } from "../dtos/menu-template-update-request.dto";
 
 export interface MenuTemplateService {
   /**
@@ -6084,10 +6493,22 @@ export interface MenuTemplateService {
   createMenuTemplate: (
     request: MenuTemplateCreateRequestDto
   ) => Promise<MenuTemplateCreateResponseDto | ErrorResponseDto>;
+
+  /**
+   * Updates an existing menu template.
+   */
+  updateMenuTemplate: (
+    id: number,
+    request: MenuTemplateUpdateRequestDto
+  ) => Promise<any | ErrorResponseDto>;
+
+  /**
+   * Deletes a menu template.
+   */
+  deleteMenuTemplate: (id: number) => Promise<any | ErrorResponseDto>;
 }
 
 export const MenuTemplateServiceToken = Symbol("MenuTemplateService");
-
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\menu-template\utils\menu-tree.utils.ts
 import { TreeNode } from "primereact/treenode";
@@ -6527,6 +6948,76 @@ export default function ProfilePage() {
 }
 
 
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\delete\delete.tsx
+"use client";
+import React from "react";
+import { ProjectResponseDto } from "../dtos/project.dto";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
+
+interface DeleteProjectProps {
+  visible: boolean;
+  onHide: () => void;
+  onDelete: (id: number) => Promise<void>;
+  project: ProjectResponseDto | null;
+}
+
+export default function DeleteProject({
+  visible,
+  onHide,
+  onDelete,
+  project,
+}: DeleteProjectProps) {
+  const handleConfirm = async () => {
+    if (project) {
+      await onDelete(project.id);
+      onHide();
+    }
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        outlined
+        onClick={onHide}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        severity="danger"
+        onClick={handleConfirm}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "32rem" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Confirm"
+      modal
+      draggable={false}
+      footer={dialogFooter}
+      onHide={onHide}
+    >
+      <div className="confirmation-content flex items-center">
+        <i
+          className="pi pi-exclamation-triangle mr-3"
+          style={{ fontSize: "2rem" }}
+        />
+        {project && (
+          <span>
+            Are you sure you want to delete <b>{project.name}</b>?
+          </span>
+        )}
+      </div>
+    </Dialog>
+  );
+}
+
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\dtos\project.dto.ts
 // For listing projects (Response)
 export class ProjectResponseDto {
@@ -6563,6 +7054,139 @@ export class ProjectRemoveUserResponseDto {
   message: string = "";
 }
 
+// For updating a project (Request) - PATCH operation
+export class ProjectUpdateRequestDto {
+  name?: string = "";
+  description?: string = "";
+}
+
+// For updating a project (Response)
+export class ProjectUpdateResponseDto {
+  id: number = 0;
+  name: string = "";
+  description?: string = "";
+}
+
+// For deleting a project (Response)
+export class ProjectDeleteResponseDto {
+  message: string = "";
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\edit\edit.tsx
+"use client";
+import React, { useState } from "react";
+import { ProjectResponseDto } from "../dtos/project.dto";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Button } from "primereact/button";
+import { classNames } from "primereact/utils";
+
+interface EditProjectProps {
+  visible: boolean;
+  onHide: () => void;
+  onUpdate: (id: number, name: string, description: string) => Promise<void>;
+  project: ProjectResponseDto | null;
+}
+
+export default function EditProject({
+  visible,
+  onHide,
+  onUpdate,
+  project,
+}: EditProjectProps) {
+  const [projectName, setProjectName] = useState<string>("");
+  const [projectDescription, setProjectDescription] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (project) {
+      setProjectName(project.name);
+      setProjectDescription(project.description || "");
+      setSubmitted(false);
+    }
+  }, [project]);
+
+  const handleSubmit = async () => {
+    setSubmitted(true);
+
+    if (projectName.trim() && project) {
+      await onUpdate(project.id, projectName, projectDescription);
+      setProjectName("");
+      setProjectDescription("");
+      setSubmitted(false);
+      onHide();
+    }
+  };
+
+  const handleHide = () => {
+    setProjectName("");
+    setProjectDescription("");
+    setSubmitted(false);
+    onHide();
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        outlined
+        onClick={handleHide}
+      />
+      <Button
+        label="Update"
+        icon="pi pi-check"
+        onClick={handleSubmit}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "32rem" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Edit Project"
+      modal
+      draggable={false}
+      className="p-fluid"
+      footer={dialogFooter}
+      onHide={handleHide}
+    >
+      <div className="field">
+        <label htmlFor="editName" className="font-bold">
+          Name
+        </label>
+        <InputText
+          id="editName"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          required
+          autoFocus
+          className={classNames({ "p-invalid": submitted && !projectName })}
+        />
+        {submitted && !projectName && (
+          <small className="p-error">Name is required.</small>
+        )}
+      </div>
+      
+      <div className="field">
+        <label htmlFor="editDescription" className="font-bold">
+          Description
+        </label>
+        <InputTextarea
+          id="editDescription"
+          value={projectDescription}
+          onChange={(e) => setProjectDescription(e.target.value)}
+          rows={3}
+          autoResize
+        />
+      </div>
+    </Dialog>
+  );
+}
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\project\page.tsx
 "use client";
@@ -6579,8 +7203,13 @@ import {
 import {
   ProjectCreateRequestDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
 } from "./dtos/project.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
+
+// Components
+import DeleteProject from "./delete/delete";
+import EditProject from "./edit/edit";
 
 // PrimeReact
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -6606,6 +7235,16 @@ export default function ProjectPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
+  // --- Edit Dialog State ---
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingProject, setEditingProject] =
+    useState<ProjectResponseDto | null>(null);
+
+  // --- Delete Dialog State ---
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [projectToDelete, setProjectToDelete] =
+    useState<ProjectResponseDto | null>(null);
+
   useEffect(() => {
     loadProjects();
   }, [lazyParams]);
@@ -6614,7 +7253,7 @@ export default function ProjectPage() {
     setLoading(true);
     const res = await projectService.getProjects(
       lazyParams.page,
-      lazyParams.rows
+      lazyParams.rows,
     );
     if (res instanceof ErrorResponseDto) {
       toast.current?.show({
@@ -6676,6 +7315,86 @@ export default function ProjectPage() {
     }
   };
 
+  const openEdit = (project: ProjectResponseDto) => {
+    setEditingProject(project);
+    setShowEditDialog(true);
+  };
+
+  const updateProject = async (
+    id: number,
+    name: string,
+    description: string,
+  ) => {
+    if (!editingProject) return;
+
+    const request = new ProjectUpdateRequestDto();
+
+    // Only include fields that have changed
+    if (name !== editingProject.name) {
+      request.name = name;
+    }
+    if (description !== (editingProject.description || "")) {
+      request.description = description;
+    }
+
+    // If nothing changed, just return
+    if (!request.name && !request.description) {
+      return;
+    }
+
+    const res = await projectService.updateProject(id, request);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project updated successfully",
+      });
+      setShowEditDialog(false);
+      loadProjects(); // Refresh table
+    }
+  };
+
+  const hideEditDialog = () => {
+    setShowEditDialog(false);
+    setEditingProject(null);
+  };
+
+  const openDelete = (project: ProjectResponseDto) => {
+    setProjectToDelete(project);
+    setShowDeleteDialog(true);
+  };
+
+  const hideDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setProjectToDelete(null);
+  };
+
+  const deleteProject = async (id: number) => {
+    const res = await projectService.deleteProject(id);
+
+    if (res instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: res.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Project deleted successfully",
+      });
+      loadProjects(); // Refresh table
+    }
+  };
+
   // --- Renderers ---
   const indexBody = (rowData: any, props: any) => props.rowIndex + 1;
 
@@ -6688,6 +7407,7 @@ export default function ProjectPage() {
           text
           severity="info"
           aria-label="Edit"
+          onClick={() => openEdit(rowData)}
         />
       </div>
     );
@@ -6702,6 +7422,7 @@ export default function ProjectPage() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(rowData)}
         />
       </div>
     );
@@ -6749,6 +7470,7 @@ export default function ProjectPage() {
             rowsPerPageOptions={[5, 10, 25]}
           >
             <Column header="SL" body={indexBody} style={{ width: "5%" }} />
+            <Column field="id" header="ID" style={{ width: "5%" }} />
             <Column
               field="name"
               header="Project Name"
@@ -6757,7 +7479,7 @@ export default function ProjectPage() {
             <Column
               field="description"
               header="Description"
-              style={{ width: "60%" }}
+              style={{ width: "55%" }}
             />
             <Column header="Edit" body={editBody} style={{ width: "10%" }} />
             <Column
@@ -6805,6 +7527,20 @@ export default function ProjectPage() {
           </div>
         </div>
       </Dialog>
+
+      <EditProject
+        visible={showEditDialog}
+        onHide={hideEditDialog}
+        onUpdate={updateProject}
+        project={editingProject}
+      />
+
+      <DeleteProject
+        visible={showDeleteDialog}
+        onHide={hideDeleteDialog}
+        onDelete={deleteProject}
+        project={projectToDelete}
+      />
     </div>
   );
 }
@@ -6826,8 +7562,11 @@ import {
   ProjectAssignUserResponseDto,
   ProjectCreateRequestDto,
   ProjectCreateResponseDto,
+  ProjectDeleteResponseDto,
   ProjectRemoveUserResponseDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
+  ProjectUpdateResponseDto,
 } from "../dtos/project.dto";
 
 @injectable()
@@ -6921,6 +7660,36 @@ export class ProjectServiceImp implements ProjectService {
       return error as ErrorResponseDto;
     }
   };
+
+  updateProject = async (
+    projectId: number,
+    request: ProjectUpdateRequestDto
+  ): Promise<ProjectUpdateResponseDto | ErrorResponseDto> => {
+    try {
+      // PATCH /projects/{id}
+      const response = await api.patch<ProjectUpdateResponseDto>(
+        `/projects/${projectId}`,
+        request
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteProject = async (
+    projectId: number
+  ): Promise<ProjectDeleteResponseDto | ErrorResponseDto> => {
+    try {
+      // DELETE /projects/{id}
+      const response = await api.delete<ProjectDeleteResponseDto>(
+        `/projects/${projectId}`
+      );
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
 }
 
 
@@ -6932,8 +7701,11 @@ import {
   ProjectAssignUserResponseDto,
   ProjectCreateRequestDto,
   ProjectCreateResponseDto,
+  ProjectDeleteResponseDto,
   ProjectRemoveUserResponseDto,
   ProjectResponseDto,
+  ProjectUpdateRequestDto,
+  ProjectUpdateResponseDto,
 } from "../dtos/project.dto";
 
 export interface ProjectService {
@@ -6969,10 +7741,97 @@ export interface ProjectService {
     projectId: number,
     userId: number
   ) => Promise<ProjectRemoveUserResponseDto | ErrorResponseDto>;
+
+  /**
+   * Update a project using PATCH method.
+   * Endpoint: PATCH /projects/{id}
+   */
+  updateProject: (
+    projectId: number,
+    request: ProjectUpdateRequestDto
+  ) => Promise<ProjectUpdateResponseDto | ErrorResponseDto>;
+
+  /**
+   * Delete a project using DELETE method.
+   * Endpoint: DELETE /projects/{id}
+   */
+  deleteProject: (
+    projectId: number
+  ) => Promise<ProjectDeleteResponseDto | ErrorResponseDto>;
 }
 
 export const ProjectServiceToken = Symbol("ProjectService");
 
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\delete\delete.tsx
+"use client";
+import React from "react";
+import { RoleResponseDto } from "../dtos/role-response.dto";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
+
+interface DeleteRoleProps {
+  visible: boolean;
+  onHide: () => void;
+  onDelete: (id: number) => Promise<void>;
+  role: RoleResponseDto | null;
+}
+
+export default function DeleteRole({
+  visible,
+  onHide,
+  onDelete,
+  role,
+}: DeleteRoleProps) {
+  const handleConfirm = async () => {
+    if (role) {
+      await onDelete(role.id);
+      onHide();
+    }
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        outlined
+        onClick={onHide}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        severity="danger"
+        onClick={handleConfirm}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "32rem" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Confirm"
+      modal
+      draggable={false}
+      footer={dialogFooter}
+      onHide={onHide}
+    >
+      <div className="confirmation-content flex items-center">
+        <i
+          className="pi pi-exclamation-triangle mr-3"
+          style={{ fontSize: "2rem" }}
+        />
+        {role && (
+          <span>
+            Are you sure you want to delete <b>{role.name}</b>?
+          </span>
+        )}
+      </div>
+    </Dialog>
+  );
+}
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\dtos\role-create-request.dto.ts
 export class RoleCreateRequestDto {
@@ -6995,6 +7854,108 @@ export class RoleResponseDto {
 }
 
 
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\dtos\role-update-request.dto.ts
+export class RoleUpdateRequestDto {
+  name: string = "";
+}
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\edit\edit.tsx
+"use client";
+import React, { useState } from "react";
+import { RoleResponseDto } from "../dtos/role-response.dto";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import { classNames } from "primereact/utils";
+
+interface EditRoleProps {
+  visible: boolean;
+  onHide: () => void;
+  onUpdate: (id: number, name: string) => Promise<void>;
+  role: RoleResponseDto | null;
+}
+
+export default function EditRole({
+  visible,
+  onHide,
+  onUpdate,
+  role,
+}: EditRoleProps) {
+  const [roleName, setRoleName] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (role) {
+      setRoleName(role.name);
+      setSubmitted(false);
+    }
+  }, [role]);
+
+  const handleSubmit = async () => {
+    setSubmitted(true);
+
+    if (roleName.trim() && role) {
+      await onUpdate(role.id, roleName);
+      setRoleName("");
+      setSubmitted(false);
+      onHide();
+    }
+  };
+
+  const handleHide = () => {
+    setRoleName("");
+    setSubmitted(false);
+    onHide();
+  };
+
+  const dialogFooter = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        outlined
+        onClick={handleHide}
+      />
+      <Button
+        label="Update"
+        icon="pi pi-check"
+        onClick={handleSubmit}
+      />
+    </React.Fragment>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      style={{ width: "32rem" }}
+      breakpoints={{ "960px": "75vw", "641px": "90vw" }}
+      header="Edit Role"
+      modal
+      draggable={false}
+      className="p-fluid"
+      footer={dialogFooter}
+      onHide={handleHide}
+    >
+      <div className="field">
+        <label htmlFor="editName" className="font-bold">
+          Name
+        </label>
+        <InputText
+          id="editName"
+          value={roleName}
+          onChange={(e) => setRoleName(e.target.value)}
+          required
+          autoFocus
+          className={classNames({ "p-invalid": submitted && !roleName })}
+        />
+        {submitted && !roleName && (
+          <small className="p-error">Name is required.</small>
+        )}
+      </div>
+    </Dialog>
+  );
+}
+
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\(main)\role\page.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
@@ -7005,6 +7966,10 @@ import { ErrorResponseDto } from "@/app/network/error-response.dto";
 // Updated Imports
 import { RoleResponseDto } from "./dtos/role-response.dto";
 import { RoleCreateRequestDto } from "./dtos/role-create-request.dto";
+import { RoleUpdateRequestDto } from "./dtos/role-update-request.dto";
+import EditRole from "./edit/edit";
+import DeleteRole from "./delete/delete";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 // PrimeReact Imports
 import { DataTable, DataTableStateEvent } from "primereact/datatable";
@@ -7017,7 +7982,7 @@ import { classNames } from "primereact/utils";
 
 export default function Role() {
   const roleService = container.get<RoleService>(RoleServiceToken);
-  const toast = useRef<Toast>(null);
+  const toast = useRef<Toast>(null) as React.RefObject<Toast>;
 
   // 1. Update State to use new RoleResponseDto
   const [roles, setRoles] = useState<RoleResponseDto[]>([]);
@@ -7033,6 +7998,14 @@ export default function Role() {
   const [roleDialog, setRoleDialog] = useState<boolean>(false);
   const [roleName, setRoleName] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
+
+  // Edit Dialog State
+  const [editRoleDialog, setEditRoleDialog] = useState<boolean>(false);
+  const [selectedRole, setSelectedRole] = useState<RoleResponseDto | null>(null);
+
+  // Delete Dialog State
+  const [deleteRoleDialog, setDeleteRoleDialog] = useState<boolean>(false);
+  const [roleToDelete, setRoleToDelete] = useState<RoleResponseDto | null>(null);
 
   useEffect(() => {
     loadRoles();
@@ -7071,9 +8044,56 @@ export default function Role() {
     setRoleDialog(true);
   };
 
+  const openEdit = (role: RoleResponseDto) => {
+    console.log('Selected Role for Edit:', role);
+    if (PermissionUtils.canModifyRole(role, toast)) {
+      setSelectedRole(role);
+      setEditRoleDialog(true);
+    }
+  };
+
   const hideDialog = () => {
     setSubmitted(false);
     setRoleDialog(false);
+  };
+
+  const hideEditDialog = () => {
+    setEditRoleDialog(false);
+    setSelectedRole(null);
+  };
+
+  const openDelete = (role: RoleResponseDto) => {
+    if (PermissionUtils.canModifyRole(role, toast)) {
+      setRoleToDelete(role);
+      setDeleteRoleDialog(true);
+    }
+  };
+
+  const hideDeleteDialog = () => {
+    setDeleteRoleDialog(false);
+    setRoleToDelete(null);
+  };
+
+  const deleteRole = async (id: number) => {
+    setLoading(true);
+    const response = await roleService.deleteRole(id);
+
+    if (response instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: response.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Role Deleted",
+        life: 3000,
+      });
+      loadRoles();
+    }
+    setLoading(false);
   };
 
   const saveRole = async () => {
@@ -7116,7 +8136,34 @@ export default function Role() {
     </React.Fragment>
   );
 
-  const editAction = () => {
+  const updateRole = async (id: number, name: string) => {
+    setLoading(true);
+
+    const req = new RoleUpdateRequestDto();
+    req.name = name;
+
+    const response = await roleService.updateRole(id, req);
+
+    if (response instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: response.message,
+      });
+    } else {
+      toast.current?.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Role Updated",
+        life: 3000,
+      });
+      loadRoles();
+    }
+    
+    setLoading(false);
+  };
+
+  const editAction = (role: RoleResponseDto) => {
     return (
       <div className="flex gap-2">
         <Button
@@ -7125,12 +8172,13 @@ export default function Role() {
           text
           severity="info"
           aria-label="Update"
+          onClick={() => openEdit(role)}
         />
       </div>
     );
   };
 
-  const deleteAction = () => {
+  const deleteAction = (role: RoleResponseDto) => {
     return (
       <div className="flex gap-2">
         <Button
@@ -7139,6 +8187,7 @@ export default function Role() {
           text
           severity="danger"
           aria-label="Delete"
+          onClick={() => openDelete(role)}
         />
       </div>
     );
@@ -7182,7 +8231,7 @@ export default function Role() {
               header="Role Name"
               style={{ width: "70%" }}
             ></Column>
-            <Column header="Edit" body={editAction} style={{ width: "10%" }} />
+            <Column header="Edit" body={editAction} style={{ width: "10%" }}></Column>
             <Column
               header="Delete"
               body={deleteAction}
@@ -7197,6 +8246,7 @@ export default function Role() {
           breakpoints={{ "960px": "75vw", "641px": "90vw" }}
           header="New Role"
           modal
+          draggable={false}
           className="p-fluid"
           footer={roleDialogFooter}
           onHide={hideDialog}
@@ -7218,6 +8268,20 @@ export default function Role() {
             )}
           </div>
         </Dialog>
+
+        <EditRole
+          visible={editRoleDialog}
+          onHide={hideEditDialog}
+          onUpdate={updateRole}
+          role={selectedRole}
+        />
+
+        <DeleteRole
+          visible={deleteRoleDialog}
+          onHide={hideDeleteDialog}
+          onDelete={deleteRole}
+          role={roleToDelete}
+        />
       </div>
     </div>
   );
@@ -7240,6 +8304,7 @@ import { RoleResponseDto } from "../dtos/role-response.dto";
 import { RoleCreateRequestDto } from "../dtos/role-create-request.dto"; // Assuming this maps to your provided class
 import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
 import { RoleCreateResponseDto } from "../dtos/role-create-response.dto";
+import { RoleUpdateRequestDto } from "../dtos/role-update-request.dto";
 
 @injectable()
 export class RoleServiceImp implements RoleService {
@@ -7288,6 +8353,29 @@ export class RoleServiceImp implements RoleService {
       return error as ErrorResponseDto;
     }
   };
+
+  updateRole = async (
+    id: number,
+    roleUpdateRequest: RoleUpdateRequestDto
+  ): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.patch<any>(`/roles/${id}`, {
+        name: roleUpdateRequest.name,
+      });
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
+
+  deleteRole = async (id: number): Promise<any | ErrorResponseDto> => {
+    try {
+      const response = await api.delete<any>(`/roles/${id}`);
+      return response.data;
+    } catch (error) {
+      return error as ErrorResponseDto;
+    }
+  };
 }
 
 
@@ -7297,6 +8385,7 @@ import { RoleResponseDto } from "../dtos/role-response.dto";
 import { PaginationResponseDto } from "@/app/utils/dtos/pagination-response.dto";
 import { RoleCreateRequestDto } from "../dtos/role-create-request.dto";
 import { RoleCreateResponseDto } from "../dtos/role-create-response.dto";
+import { RoleUpdateRequestDto } from "../dtos/role-update-request.dto";
 
 export interface RoleService {
   getRoles: (
@@ -7306,6 +8395,11 @@ export interface RoleService {
   createRole: (
     roleCreateRequest: RoleCreateRequestDto
   ) => Promise<RoleCreateResponseDto | ErrorResponseDto>;
+  updateRole: (
+    id: number,
+    roleUpdateRequest: RoleUpdateRequestDto
+  ) => Promise<any | ErrorResponseDto>;
+  deleteRole: (id: number) => Promise<any | ErrorResponseDto>;
 }
 
 export const RoleServiceToken = Symbol("RoleService");
@@ -7381,10 +8475,10 @@ export default function SettingsPage() {
 
     // 3. Determine current selection from cookies (to show current state initially)
     const currentOrgCookie = cookieService.getCookie(
-      ACTIVE_ORG_POSITION_COOKIE
+      ACTIVE_ORG_POSITION_COOKIE,
     );
     const currentProjCookie = cookieService.getCookie(
-      ACTIVE_PROJECT_POSITION_COOKIE
+      ACTIVE_PROJECT_POSITION_COOKIE,
     );
 
     const initOrgIndex = currentOrgCookie ? parseInt(currentOrgCookie) : 0;
@@ -7400,7 +8494,7 @@ export default function SettingsPage() {
   const loadProjectsForOrg = (
     orgs: JwtOrgDto[],
     orgIndex: number,
-    projIndexToSelect: number | null = null
+    projIndexToSelect: number | null = null,
   ) => {
     const org = orgs[orgIndex];
     if (org && org.projects) {
@@ -7447,7 +8541,7 @@ export default function SettingsPage() {
     cookieService.setCookie(
       ACTIVE_ORG_POSITION_COOKIE,
       selectedOrgIndex.toString(),
-      1
+      1,
     );
 
     // If no projects exist, we can store 0 or -1, but usually logic handles 0 safely
@@ -7456,7 +8550,7 @@ export default function SettingsPage() {
     cookieService.setCookie(
       ACTIVE_PROJECT_POSITION_COOKIE,
       projIndexToSave.toString(),
-      1
+      1,
     );
 
     toast.current?.show({
@@ -7524,7 +8618,8 @@ export default function SettingsPage() {
               <Button
                 label="Cancel"
                 severity="secondary"
-                text
+                icon="pi pi-times"
+                outlined
                 onClick={() => router.back()}
               />
               <Button
@@ -7618,12 +8713,13 @@ import { Dropdown } from "primereact/dropdown";
 import { InputSwitch } from "primereact/inputswitch";
 import { Toast } from "primereact/toast";
 import { Tag } from "primereact/tag";
+import { PermissionUtils } from "@/app/utils/permission/PermissionUtils";
 
 export default function UserPage() {
   const userService = container.get<UserService>(UserServiceToken);
   const roleService = container.get<RoleService>(RoleServiceToken);
   const menuTemplateService = container.get<MenuTemplateService>(
-    MenuTemplateServiceToken
+    MenuTemplateServiceToken,
   );
   const projectService = container.get<ProjectService>(ProjectServiceToken);
 
@@ -7648,7 +8744,7 @@ export default function UserPage() {
   const [showEditDialog, setEditShowDialog] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number>(0);
   const [roleDropdown, setRoleDropdown] = useState<RoleResponseDto>(
-    new RoleResponseDto()
+    new RoleResponseDto(),
   );
   const [menuTemplateDropdown, setMenuTemplateDropdown] =
     useState<MenuTemplateResponseDto>(new MenuTemplateResponseDto());
@@ -7661,7 +8757,7 @@ export default function UserPage() {
 
   // Selection States
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -7709,14 +8805,10 @@ export default function UserPage() {
 
   // --- Edit User Logic ---
   const openEditDialog = (user: UserResponseDto) => {
-    if (user.super) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Cannot edit super user",
-      });
+    if (!PermissionUtils.canModifyUser(user.super, toast)) {
       return;
     }
+
     setEditingUserId(user.id);
     setRoleDropdown({ id: user.roleId || 0, name: user.roleName || "" });
     setMenuTemplateDropdown({
@@ -7755,14 +8847,8 @@ export default function UserPage() {
   };
 
   // --- Project Management Logic ---
-
   const openProjectDialog = async (user: UserResponseDto) => {
-    if (user.super) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Cannot modify super user projects!",
-      });
+    if (!PermissionUtils.canModifyUserProjects(user.super, toast)) {
       return;
     }
 
@@ -7792,7 +8878,7 @@ export default function UserPage() {
 
     const res = await projectService.assignUserToProject(
       selectedProjectId,
-      request
+      request,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -7808,7 +8894,7 @@ export default function UserPage() {
         detail: "Project assigned",
       });
       const updatedList = await projectService.getUserProjectsByUserIdAndOrgId(
-        projectUser.id
+        projectUser.id,
       );
       if (!(updatedList instanceof ErrorResponseDto)) {
         setUserProjects(updatedList);
@@ -7822,7 +8908,7 @@ export default function UserPage() {
 
     const res = await projectService.removeUserFromProject(
       project.id,
-      projectUser.id
+      projectUser.id,
     );
 
     if (res instanceof ErrorResponseDto) {
@@ -8018,11 +9104,11 @@ export default function UserPage() {
           <div className="flex align-items-center gap-3">
             <InputSwitch
               inputId="status"
-              checked={disabled}
-              onChange={(e) => setDisabled(e.value)}
+              checked={!disabled}
+              onChange={(e) => setDisabled(!e.value)}
             />
             <label htmlFor="status" className="font-bold">
-              {disabled ? "Disabled" : "Active"}
+              {disabled ? "Inactive" : "Active"}
             </label>
           </div>
         </div>
@@ -9385,6 +10471,113 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app
 export class PaginationResponseDto<T> {
   items: T[] = [];
   total: number = 0;
+}
+
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\app\utils\permission\PermissionUtils.ts
+import { RoleResponseDto } from "@/app/(main)/role/dtos/role-response.dto";
+import { Toast } from "primereact/toast";
+
+export class PermissionUtils {
+  /**
+   * Check if a user can be modified (edited/deleted)
+   * Super users cannot be modified
+   */
+  static canModifyUser = (
+    isSuper: boolean | null,
+    toast?: React.RefObject<Toast | null>,
+  ): boolean => {
+    if (isSuper && toast) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Cannot modify super user!",
+      });
+
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * Check if a user's projects can be modified
+   * Super users' projects cannot be modified
+   */
+  static canModifyUserProjects = (
+    isSuper: boolean | null,
+    toast?: React.RefObject<Toast | null>,
+  ): boolean => {
+    if (isSuper && toast) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Cannot modify super user projects!",
+      });
+
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * Check if a role can be modified
+   * Prevents modification of system roles like 'Super Admin' and 'Admin'
+   */
+  static canModifyRole = (
+    role: RoleResponseDto,
+    toast?: React.RefObject<Toast> | null,
+  ): boolean => {
+    try {
+      // Prevent modification of system roles
+      const systemRoles = ["Admin"];
+      const isSystemRole = systemRoles.includes(role.name);
+
+      if (isSystemRole && toast) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Warning",
+          detail: "Cannot modify system roles!",
+        });
+
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Permission check error:", error);
+      return false;
+    }
+  };
+
+  /**
+   * Check if a menu template can be modified
+   * Prevents modification of system menu templates
+   */
+  static canModifyMenuTemplate = (
+    menuTemplate: any,
+    toast?: React.RefObject<Toast> | null,
+  ): boolean => {
+    try {
+      console.log("Checking permissions for menu template!");
+      // Prevent modification of system menu templates
+      const systemTemplates = ["Admin Menu Template"];
+      const isSystemTemplate = systemTemplates.includes(menuTemplate.name);
+
+      if (isSystemTemplate && toast) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Warning",
+          detail: "Cannot modify system menu templates!",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Permission check error:", error);
+      return false;
+    }
+  };
 }
 
 
@@ -16803,7 +17996,7 @@ file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\pg-
 -- select * FROM role;
 -- SELECT * FROM userorglink;
 -- SELECT * FROM userinfo;
-SELECT * FROM result;
+SELECT * FROM menutemplate;
 
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\public\graph\analytics.html
 <!DOCTYPE html>
@@ -38414,6 +39607,34 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
     npx tsx bundler.ts
 
 
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\scripts\client-sdk-integration-template.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://ab-server-live-115286204440.us-central1.run.app/static/client-sdk.js"></script>
+  </head>
+  <body>
+    <script>
+      // Wait for window load if you are still getting errors
+      window.addEventListener("load", () => {
+        if (typeof ABTestingClient === "undefined") {
+          console.error("SDK failed to load!");
+          return;
+        }
+
+        window.abClient = new ABTestingClient({
+          serverBaseUrl:
+            "https://ab-server-live-115286204440.us-central1.run.app",
+          projectId: 1,
+        });
+
+        window.abClient.init();
+      });
+    </script>
+  </body>
+</html>
+
+
 file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\scripts\strip-comments.js
 const fs = require("fs");
 const path = require("path");
@@ -38610,4 +39831,35 @@ describe("LeftMenu", () => {
   });
 });
 
+
+file path: C:\Users\Shahriar\Documents\Projects\Personal\ABTestingToolClient\__tests__\project-delete.test.ts
+import { ProjectService } from "@/app/(main)/project/services/project.service";
+import { ProjectDeleteResponseDto } from "@/app/(main)/project/dtos/project.dto";
+
+// Mock the project service for testing
+const mockProjectService: Partial<ProjectService> = {
+  deleteProject: async (projectId: number): Promise<ProjectDeleteResponseDto> => {
+    // Simulate successful delete response
+    return {
+      message: `Project with ID ${projectId} has been successfully deleted.`
+    };
+  }
+};
+
+describe('Project Delete API', () => {
+  it('should delete a project successfully', async () => {
+    const projectId = 1;
+    const result = await mockProjectService.deleteProject!(projectId);
+    
+    expect(result).toBeDefined();
+    expect(result.message).toContain(`Project with ID ${projectId} has been successfully deleted`);
+  });
+
+  it('should handle project ID correctly', async () => {
+    const projectId = 123;
+    const result = await mockProjectService.deleteProject!(projectId);
+    
+    expect(result.message).toContain(projectId.toString());
+  });
+});
 

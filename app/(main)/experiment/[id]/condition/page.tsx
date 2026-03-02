@@ -320,6 +320,7 @@ export default function ConditionPage(props: Props) {
                     }
                     className="p-inputtext-sm w-full"
                     placeholder="Press enter to add URL"
+                    separator=","
                   />
                   {condition.urls.length === 0 && (
                     <small className="text-pink-500">

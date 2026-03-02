@@ -46,11 +46,13 @@ export default function ProjectPage() {
 
   // --- Edit Dialog State ---
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectResponseDto | null>(null);
+  const [editingProject, setEditingProject] =
+    useState<ProjectResponseDto | null>(null);
 
   // --- Delete Dialog State ---
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<ProjectResponseDto | null>(null);
+  const [projectToDelete, setProjectToDelete] =
+    useState<ProjectResponseDto | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -60,7 +62,7 @@ export default function ProjectPage() {
     setLoading(true);
     const res = await projectService.getProjects(
       lazyParams.page,
-      lazyParams.rows
+      lazyParams.rows,
     );
     if (res instanceof ErrorResponseDto) {
       toast.current?.show({
@@ -127,23 +129,16 @@ export default function ProjectPage() {
     setShowEditDialog(true);
   };
 
-  const updateProject = async (id: number, name: string, description: string) => {
+  const updateProject = async (
+    id: number,
+    name: string,
+    description: string,
+  ) => {
     if (!editingProject) return;
 
     const request = new ProjectUpdateRequestDto();
-    
-    // Only include fields that have changed
-    if (name !== editingProject.name) {
-      request.name = name;
-    }
-    if (description !== (editingProject.description || "")) {
-      request.description = description;
-    }
-
-    // If nothing changed, just return
-    if (!request.name && !request.description) {
-      return;
-    }
+    request.name = name;
+    request.description = description;
 
     const res = await projectService.updateProject(id, request);
 
@@ -243,7 +238,6 @@ export default function ProjectPage() {
     </div>
   );
 
-
   return (
     <div className="grid p-fluid p-4">
       <Toast ref={toast} />
@@ -274,6 +268,7 @@ export default function ProjectPage() {
             rowsPerPageOptions={[5, 10, 25]}
           >
             <Column header="SL" body={indexBody} style={{ width: "5%" }} />
+            <Column field="id" header="ID" style={{ width: "5%" }} />
             <Column
               field="name"
               header="Project Name"
@@ -282,7 +277,7 @@ export default function ProjectPage() {
             <Column
               field="description"
               header="Description"
-              style={{ width: "60%" }}
+              style={{ width: "55%" }}
             />
             <Column header="Edit" body={editBody} style={{ width: "10%" }} />
             <Column

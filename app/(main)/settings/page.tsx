@@ -67,10 +67,10 @@ export default function SettingsPage() {
 
     // 3. Determine current selection from cookies (to show current state initially)
     const currentOrgCookie = cookieService.getCookie(
-      ACTIVE_ORG_POSITION_COOKIE
+      ACTIVE_ORG_POSITION_COOKIE,
     );
     const currentProjCookie = cookieService.getCookie(
-      ACTIVE_PROJECT_POSITION_COOKIE
+      ACTIVE_PROJECT_POSITION_COOKIE,
     );
 
     const initOrgIndex = currentOrgCookie ? parseInt(currentOrgCookie) : 0;
@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const loadProjectsForOrg = (
     orgs: JwtOrgDto[],
     orgIndex: number,
-    projIndexToSelect: number | null = null
+    projIndexToSelect: number | null = null,
   ) => {
     const org = orgs[orgIndex];
     if (org && org.projects) {
@@ -133,7 +133,7 @@ export default function SettingsPage() {
     cookieService.setCookie(
       ACTIVE_ORG_POSITION_COOKIE,
       selectedOrgIndex.toString(),
-      1
+      1,
     );
 
     // If no projects exist, we can store 0 or -1, but usually logic handles 0 safely
@@ -142,7 +142,7 @@ export default function SettingsPage() {
     cookieService.setCookie(
       ACTIVE_PROJECT_POSITION_COOKIE,
       projIndexToSave.toString(),
-      1
+      1,
     );
 
     toast.current?.show({
@@ -210,7 +210,8 @@ export default function SettingsPage() {
               <Button
                 label="Cancel"
                 severity="secondary"
-                text
+                icon="pi pi-times"
+                outlined
                 onClick={() => router.back()}
               />
               <Button

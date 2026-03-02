@@ -74,6 +74,11 @@ import {
   ResultsServiceToken,
 } from "./(main)/experiment/[id]/results/services/results.service";
 import { ResultsServiceImp } from "./(main)/experiment/[id]/results/services/results-imp.service";
+import {
+  IntegrationService,
+  IntegrationServiceToken,
+} from "./(main)/integration/services/integration.service";
+import { IntegrationServiceImp } from "./(main)/integration/services/integration-imp.service";
 
 const container: Container = new Container();
 
@@ -100,5 +105,8 @@ container.bind<VariationService>(VariationServiceToken).to(VariationServiceImp);
 container.bind<TrafficService>(TrafficServiceToken).to(TrafficServiceImp);
 container.bind<MetricsService>(MetricsServiceToken).to(MetricsServiceImp);
 container.bind<ResultsService>(ResultsServiceToken).to(ResultsServiceImp);
+container
+  .bind<IntegrationService>(IntegrationServiceToken)
+  .to(IntegrationServiceImp);
 
 export { container };

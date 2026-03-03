@@ -2,19 +2,16 @@ import { injectable } from "inversify";
 import api from "@/app/network/interceptor";
 import { ResultsService } from "./results.service";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
-import {
-  ResultsResponseDto,
-  ResultsStatsDto,
-} from "../dtos/results.dto";
+import { ResultsResponseDto } from "../dtos/results.dto";
 
 @injectable()
 export class ResultsServiceImp implements ResultsService {
   getResults = async (
-    experimentId: number
+    experimentId: number,
   ): Promise<ResultsResponseDto[] | ErrorResponseDto> => {
     try {
       const response = await api.get<ResultsResponseDto[]>(
-        `/experiments/${experimentId}/results`
+        `/experiments/${experimentId}/results`,
       );
       return response.data;
     } catch (error) {

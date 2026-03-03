@@ -1,27 +1,20 @@
 "use client";
+import "./results.scss";
 import React, { useEffect, useRef, useState, use } from "react";
 import { container } from "@/app/di";
-
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
-
-// PrimeReact
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { Skeleton } from "primereact/skeleton";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Card } from "primereact/card";
-
-import "./results.scss";
-import { ResultsResponseDto, ResultsStatsDto } from "./dtos/results.dto";
+import { ResultsResponseDto } from "./dtos/results.dto";
 import {
   ResultsService,
   ResultsServiceToken,
 } from "./services/results.service";
-import {
-  ExperimentService,
-  ExperimentServiceToken,
-} from "../../services/experiment.service";
+import { Tag } from "primereact/tag";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -29,19 +22,12 @@ interface Props {
 }
 
 export default function ResultsPage(props: Props) {
-  const [expId, setExpId] = useState<number>(0);
   const resultsService = container.get<ResultsService>(ResultsServiceToken);
-  const experimentService = container.get<ExperimentService>(
-    ExperimentServiceToken,
-  );
   const toast = useRef<Toast>(null);
 
-  // Data State
+  const [expId, setExpId] = useState<number>(0);
   const [results, setResults] = useState<ResultsResponseDto[]>([]);
-  const [stats, setStats] = useState<ResultsStatsDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [experimentName, setExperimentName] = useState("");
-
   const params = use(props.params);
   const propExpId = parseInt(params.id);
 
@@ -57,13 +43,6 @@ export default function ResultsPage(props: Props) {
     setLoading(true);
 
     try {
-      // 1. Fetch Experiment Details
-      const expRes = await experimentService.getExperimentById(experimentId);
-      if (!(expRes instanceof ErrorResponseDto)) {
-        setExperimentName(expRes.title || "");
-      }
-
-      // 2. Fetch Results Data
       const resultsRes = await resultsService.getResults(experimentId);
       if (!(resultsRes instanceof ErrorResponseDto)) {
         setResults(resultsRes);
@@ -72,14 +51,21 @@ export default function ResultsPage(props: Props) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Failed to load results data",
+        detail: "Failed to load results data!",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading && results.length === 0 && !stats)
+  const isPrimaryBody = (result: ResultsResponseDto) => (
+    <Tag
+      severity={result.isPrimary ? "success" : "info"}
+      value={result.isPrimary ? "YES" : "NO"}
+    />
+  );
+
+  if (loading && results.length === 0)
     return (
       <div className="p-4">
         <Skeleton height="400px" />
@@ -87,19 +73,13 @@ export default function ResultsPage(props: Props) {
     );
 
   return (
-    <div className="results-page h-full flex flex-column">
+    <div className="results-page flex flex-column">
       <Toast ref={toast} />
-
-      <div className="header-bar">
-        <h2 className="m-0 text-900 font-bold">Results</h2>
-        {experimentName && <span className="text-500">{experimentName}</span>}
-      </div>
-
       <div className="flex-1 flex flex-column gap-4">
         {/* Results Table */}
         <Card>
           <div className="flex justify-content-between align-items-center mb-4">
-            <h3 className="m-0">Individual Results</h3>
+            <h2 className="m-0">Results</h2>
             <Button
               icon="pi pi-refresh"
               label="Refresh"
@@ -116,10 +96,39 @@ export default function ResultsPage(props: Props) {
             rowsPerPageOptions={[10, 25, 50]}
             stripedRows
             showGridlines
-            responsiveLayout="scroll"
-            emptyMessage="No results available"
+            emptyMessage="No results available!"
           >
-            <Column field="id" header="ID" style={{ width: "5%" }} sortable />
+            <Column
+              field="metricName"
+              header="Name"
+              style={{ width: "20%" }}
+              sortable
+            />
+            <Column
+              field="isPrimary"
+              header="Primary"
+              body={isPrimaryBody}
+              style={{ width: "20%" }}
+              sortable
+            />
+            <Column
+              field="variationName"
+              header="Variation"
+              style={{ width: "20%" }}
+              sortable
+            />
+            <Column
+              field="triggeredOnQA"
+              header="Triggered on QA"
+              style={{ width: "20%" }}
+              sortable
+            />
+            <Column
+              field="triggeredOnLIVE"
+              header="Triggered on LIVE"
+              style={{ width: "20%" }}
+              sortable
+            />
           </DataTable>
         </Card>
       </div>

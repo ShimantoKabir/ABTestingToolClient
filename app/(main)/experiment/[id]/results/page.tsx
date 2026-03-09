@@ -73,65 +73,61 @@ export default function ResultsPage(props: Props) {
     );
 
   return (
-    <div className="results-page flex flex-column">
+    <div className="results-page card shadow-2 p-4 surface-card border-round">
       <Toast ref={toast} />
-      <div className="flex-1 flex flex-column gap-4">
-        {/* Results Table */}
-        <Card>
-          <div className="flex justify-content-between align-items-center mb-4">
-            <h2 className="m-0">Results</h2>
-            <Button
-              icon="pi pi-refresh"
-              label="Refresh"
-              onClick={() => expId > 0 && loadData(expId)}
-              loading={loading}
-            />
-          </div>
 
-          <DataTable
-            value={results}
-            loading={loading}
-            paginator
-            rows={10}
-            rowsPerPageOptions={[10, 25, 50]}
-            stripedRows
-            showGridlines
-            emptyMessage="No results available!"
-          >
-            <Column
-              field="metricName"
-              header="Name"
-              style={{ width: "20%" }}
-              sortable
-            />
-            <Column
-              field="isPrimary"
-              header="Primary"
-              body={isPrimaryBody}
-              style={{ width: "20%" }}
-              sortable
-            />
-            <Column
-              field="variationName"
-              header="Variation"
-              style={{ width: "20%" }}
-              sortable
-            />
-            <Column
-              field="triggeredOnQA"
-              header="Triggered on QA"
-              style={{ width: "20%" }}
-              sortable
-            />
-            <Column
-              field="triggeredOnLIVE"
-              header="Triggered on LIVE"
-              style={{ width: "20%" }}
-              sortable
-            />
-          </DataTable>
-        </Card>
+      <div className="flex justify-content-between align-items-center mb-4">
+        <h3 className="m-0">Results</h3>
+        <Button
+          icon="pi pi-refresh"
+          label="Refresh"
+          onClick={() => expId > 0 && loadData(expId)}
+          loading={loading}
+        />
       </div>
+
+      <DataTable
+        value={results}
+        loading={loading}
+        paginator
+        rows={10}
+        rowsPerPageOptions={[10, 25, 50]}
+        stripedRows
+        showGridlines
+        emptyMessage="No results available!"
+      >
+        <Column
+          field="metricName"
+          header="Name"
+          style={{ width: "20%" }}
+          sortable
+        />
+        <Column
+          field="isPrimary"
+          header="Primary"
+          body={isPrimaryBody}
+          style={{ width: "20%" }}
+          sortable
+        />
+        <Column
+          field="variationName"
+          header="Variation"
+          style={{ width: "20%" }}
+          sortable
+        />
+        <Column
+          field="triggeredOnQA"
+          header="Triggered on QA"
+          style={{ width: "20%" }}
+          sortable
+        />
+        <Column
+          field="triggeredOnLIVE"
+          header="Triggered on LIVE"
+          style={{ width: "20%" }}
+          sortable
+        />
+      </DataTable>
     </div>
   );
 }

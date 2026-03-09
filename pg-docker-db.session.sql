@@ -1,4 +1,5 @@
 -- select * FROM role;
 -- SELECT * FROM userorglink;
 -- SELECT * FROM userinfo;
-SELECT * FROM menutemplate;
+SELECT * FROM bucket;
+-- DELETE FROM bucket;

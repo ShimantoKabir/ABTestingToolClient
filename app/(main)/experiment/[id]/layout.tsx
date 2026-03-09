@@ -65,6 +65,11 @@ export default function ExperimentDetailLayout({
       command: () => router.push(`/experiment/${expId}/results`),
     },
     {
+      label: "Analytics",
+      icon: "pi pi-chart-line",
+      command: () => router.push(`/experiment/${expId}/analytics`),
+    },
+    {
       label: "Settings",
       icon: "pi pi-file-edit",
       command: () => router.push(`/experiment/${expId}/settings`),

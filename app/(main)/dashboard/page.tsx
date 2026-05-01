@@ -1,68 +1,73 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Chart } from "primereact/chart";
-import { Menu } from "primereact/menu";
-import { Button } from "primereact/button";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Toast } from "primereact/toast";
+import { container } from "@/app/di";
+import {
+  ActivityLogService,
+  ActivityLogServiceToken,
+} from "./services/activity-log.service";
+import { ActivityLogResponseDto } from "./dtos/activity-log.dto";
+import { ErrorResponseDto } from "@/app/network/error-response.dto";
 
 export default function Dashboard() {
-  const [lineOptions, setLineOptions] = useState({});
-  const [lineData, setLineData] = useState({});
+  const activityLogService = container.get<ActivityLogService>(
+    ActivityLogServiceToken,
+  );
+
   const [pieOptions, setPieOptions] = useState({});
   const [pieData, setPieData] = useState({});
-  const menuRef = React.useRef<Menu>(null);
+
+  const [activityLogs, setActivityLogs] = useState<ActivityLogResponseDto[]>(
+    [],
+  );
+  const [activityTotal, setActivityTotal] = useState<number>(0);
+  const [activityLoading, setActivityLoading] = useState<boolean>(false);
+  const [lazyParams, setLazyParams] = useState({ page: 1, rows: 10, first: 0 });
+
+  const toast = useRef<Toast>(null);
 
   useEffect(() => {
     initCharts();
   }, []);
 
+  useEffect(() => {
+    loadActivityLogs();
+  }, [lazyParams.page, lazyParams.rows]);
+
+  const loadActivityLogs = async () => {
+    setActivityLoading(true);
+    const result = await activityLogService.getActivityLogs(
+      lazyParams.page,
+      lazyParams.rows,
+    );
+    if (result instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: result.message,
+      });
+    } else {
+      setActivityLogs(result.items);
+      setActivityTotal(result.total);
+    }
+    setActivityLoading(false);
+  };
+
+  const onPageChange = (e: any) => {
+    setLazyParams({
+      first: e.first,
+      rows: e.rows,
+      page: (e.page || 0) + 1,
+    });
+  };
+
   const initCharts = () => {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue("--text-color");
-    const textColorSecondary = documentStyle.getPropertyValue(
-      "--text-color-secondary"
-    );
-    const surfaceBorder = documentStyle.getPropertyValue("--surface-border");
 
-    // 1. Traffic Overview (Line Chart)
-    setLineData({
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      datasets: [
-        {
-          label: "Total Traffic",
-          data: [650, 590, 800, 810, 960, 1100, 1200],
-          fill: false,
-          borderColor: documentStyle.getPropertyValue("--blue-500"),
-          tension: 0.0,
-        },
-        {
-          label: "Conversions",
-          data: [28, 48, 40, 79, 86, 100, 140],
-          fill: false,
-          borderColor: documentStyle.getPropertyValue("--green-500"),
-          tension: 0.0,
-        },
-      ],
-    });
-
-    setLineOptions({
-      maintainAspectRatio: false,
-      aspectRatio: 0.0,
-      plugins: {
-        legend: { labels: { color: textColor } },
-      },
-      scales: {
-        x: {
-          ticks: { color: textColorSecondary },
-          grid: { color: surfaceBorder },
-        },
-        y: {
-          ticks: { color: textColorSecondary },
-          grid: { color: surfaceBorder },
-        },
-      },
-    });
-
-    // 2. Experiment Status (Pie Chart)
     setPieData({
       labels: ["Active", "Draft", "Paused"],
       datasets: [
@@ -94,15 +99,14 @@ export default function Dashboard() {
     });
   };
 
-  // Mock Menu Items
-  const menuItems = [
-    { label: "Refresh Data", icon: "pi pi-refresh" },
-    { label: "Export Report", icon: "pi pi-file-export" },
-  ];
+  const formatDate = (row: ActivityLogResponseDto) => {
+    if (!row.createdAt) return "-";
+    return new Date(row.createdAt).toLocaleString();
+  };
 
   return (
-    // Wrapper with overflow-x-hidden prevents horizontal scrollbars caused by grid negative margins
     <div className="w-full p-3 overflow-x-hidden">
+      <Toast ref={toast} />
       <div className="grid p-fluid">
         {/* ----------------- TOP STATS CARDS ----------------- */}
         <div className="col-12 md:col-6 lg:col-3 border-round-lg">
@@ -188,39 +192,28 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ----------------- CHARTS ROW ----------------- */}
-        <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
-            <div className="flex justify-content-between align-items-center mb-5">
-              <h5>Traffic vs Conversions</h5>
-              <div>
-                <Menu model={menuItems} popup ref={menuRef} id="popup_menu" />
-                <Button
-                  icon="pi pi-ellipsis-v"
-                  className="p-button-text p-button-plain p-button-rounded"
-                  onClick={(event) => menuRef.current?.toggle(event)}
-                  aria-controls="popup_menu"
-                  aria-haspopup
-                />
-              </div>
-            </div>
-            <Chart type="line" data={lineData} options={lineOptions} />
-          </div>
-        </div>
-
-        <div className="col-12 xl:col-6">
-          <div className="surface-card shadow-2 border-round-lg p-4 h-full">
-            <div className="flex align-items-center justify-content-between mb-5">
-              <h5>Experiment Status</h5>
-            </div>
-            <div className="flex justify-content-center">
-              <Chart
-                type="doughnut"
-                data={pieData}
-                options={pieOptions}
-                style={{ position: "relative", width: "0%" }}
-              />
-            </div>
+        {/* ----------------- ACTIVITY LOG ----------------- */}
+        <div className="col-12">
+          <div className="surface-card shadow-2 border-round-lg p-4">
+            <h5 className="mb-4">Activity Log</h5>
+            <DataTable
+              value={activityLogs}
+              loading={activityLoading}
+              paginator
+              lazy
+              rows={lazyParams.rows}
+              first={lazyParams.first}
+              totalRecords={activityTotal}
+              onPage={onPageChange}
+              rowsPerPageOptions={[10, 25, 50]}
+              emptyMessage="No activity logs found."
+            >
+              <Column header="Date" body={formatDate} />
+              <Column field="userEmail" header="User" />
+              <Column field="action" header="Action" />
+              <Column field="entityType" header="Entity Type" />
+              <Column field="description" header="Description" />
+            </DataTable>
           </div>
         </div>
       </div>

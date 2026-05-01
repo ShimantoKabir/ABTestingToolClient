@@ -134,6 +134,10 @@ const LeftMenu = () => {
     }
   };
 
+  const onLogoClick = () => {
+    router.push("/dashboard");
+  };
+
   const onSettingsClick = () => {
     router.push("/settings");
   };
@@ -143,8 +147,8 @@ const LeftMenu = () => {
       <Toast ref={toast} />
 
       {/* Header */}
-      <div className="logo">
-        <i className="pi pi-box" style={{ fontSize: "1.5rem" }}></i>
+      <div className="logo" onClick={onLogoClick}>
+        <i className="pi pi-box"></i>
         <h4 className="text-900 font-bold">{APP_NAME}</h4>
       </div>
 

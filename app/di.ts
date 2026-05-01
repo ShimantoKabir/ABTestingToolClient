@@ -84,6 +84,11 @@ import {
   AnalyticsServiceToken,
 } from "./(main)/experiment/[id]/analytics/services/analytics.service";
 import { AnalyticsServiceImp } from "./(main)/experiment/[id]/analytics/services/analytics-imp.service";
+import {
+  ActivityLogService,
+  ActivityLogServiceToken,
+} from "./(main)/dashboard/services/activity-log.service";
+import { ActivityLogServiceImp } from "./(main)/dashboard/services/activity-log-imp.service";
 
 const container: Container = new Container();
 
@@ -114,5 +119,8 @@ container
   .bind<IntegrationService>(IntegrationServiceToken)
   .to(IntegrationServiceImp);
 container.bind<AnalyticsService>(AnalyticsServiceToken).to(AnalyticsServiceImp);
+container
+  .bind<ActivityLogService>(ActivityLogServiceToken)
+  .to(ActivityLogServiceImp);
 
 export { container };

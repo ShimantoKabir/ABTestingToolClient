@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Chart } from "primereact/chart";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
@@ -9,16 +8,23 @@ import {
   ActivityLogService,
   ActivityLogServiceToken,
 } from "./services/activity-log.service";
+import {
+  DashboardSummaryService,
+  DashboardSummaryServiceToken,
+} from "./services/dashboard-summary.service";
 import { ActivityLogResponseDto } from "./dtos/activity-log.dto";
+import { DashboardSummaryDto } from "./dtos/dashboard-summary.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 
 export default function Dashboard() {
   const activityLogService = container.get<ActivityLogService>(
     ActivityLogServiceToken,
   );
+  const dashboardSummaryService = container.get<DashboardSummaryService>(
+    DashboardSummaryServiceToken,
+  );
 
-  const [pieOptions, setPieOptions] = useState({});
-  const [pieData, setPieData] = useState({});
+  const [summary, setSummary] = useState<DashboardSummaryDto | null>(null);
 
   const [activityLogs, setActivityLogs] = useState<ActivityLogResponseDto[]>(
     [],
@@ -30,8 +36,21 @@ export default function Dashboard() {
   const toast = useRef<Toast>(null);
 
   useEffect(() => {
-    initCharts();
+    loadSummary();
   }, []);
+
+  const loadSummary = async () => {
+    const result = await dashboardSummaryService.getDashboardSummary();
+    if (result instanceof ErrorResponseDto) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: result.message,
+      });
+    } else {
+      setSummary(result);
+    }
+  };
 
   useEffect(() => {
     loadActivityLogs();
@@ -64,41 +83,6 @@ export default function Dashboard() {
     });
   };
 
-  const initCharts = () => {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue("--text-color");
-
-    setPieData({
-      labels: ["Active", "Draft", "Paused"],
-      datasets: [
-        {
-          data: [2, 1, 1],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--green-400"),
-            documentStyle.getPropertyValue("--yellow-400"),
-            documentStyle.getPropertyValue("--gray-400"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--green-500"),
-            documentStyle.getPropertyValue("--yellow-500"),
-            documentStyle.getPropertyValue("--gray-500"),
-          ],
-        },
-      ],
-    });
-
-    setPieOptions({
-      plugins: {
-        legend: {
-          labels: {
-            usePointStyle: true,
-            color: textColor,
-          },
-        },
-      },
-    });
-  };
-
   const formatDate = (row: ActivityLogResponseDto) => {
     if (!row.createdAt) return "-";
     return new Date(row.createdAt).toLocaleString();
@@ -116,7 +100,9 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Active Experiments
                 </span>
-                <div className="text-900 font-medium text-xl">0</div>
+                <div className="text-900 font-medium text-xl">
+                  {summary?.activeExperiments ?? 0}
+                </div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-blue-100 border-round-lg"
@@ -125,8 +111,10 @@ export default function Dashboard() {
                 <i className="pi pi-chart-line text-blue-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">0</span>
-            <span className="text-500">since last week</span>
+            <span className="text-green-500 font-medium">
+              {summary?.activeExperimentsSinceLastWeek ?? 0}
+            </span>
+            <span className="text-500"> since last week</span>
           </div>
         </div>
 
@@ -137,7 +125,9 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Total Users
                 </span>
-                <div className="text-900 font-medium text-xl">0</div>
+                <div className="text-900 font-medium text-xl">
+                  {summary?.totalUsers ?? 0}
+                </div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-orange-100 border-round-lg"
@@ -146,8 +136,10 @@ export default function Dashboard() {
                 <i className="pi pi-users text-orange-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">%0.0 </span>
-            <span className="text-500">increase</span>
+            <span className="text-green-500 font-medium">
+              {summary?.userGrowthPercent?.toFixed(1) ?? "0.0"}%
+            </span>
+            <span className="text-500"> increase</span>
           </div>
         </div>
 
@@ -158,7 +150,9 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Conversion Rate
                 </span>
-                <div className="text-900 font-medium text-xl">0.0%</div>
+                <div className="text-900 font-medium text-xl">
+                  {summary?.conversionRate?.toFixed(1) ?? "0.0"}%
+                </div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-cyan-100 border-round-lg"
@@ -167,8 +161,10 @@ export default function Dashboard() {
                 <i className="pi pi-percentage text-cyan-500 text-xl" />
               </div>
             </div>
-            <span className="text-green-500 font-medium">0.0% </span>
-            <span className="text-500">uplift today</span>
+            <span className="text-green-500 font-medium">
+              {summary?.conversionUpliftToday?.toFixed(1) ?? "0.0"}%
+            </span>
+            <span className="text-500"> uplift today</span>
           </div>
         </div>
 
@@ -179,7 +175,9 @@ export default function Dashboard() {
                 <span className="block text-500 font-medium mb-3">
                   Pending Drafts
                 </span>
-                <div className="text-900 font-medium text-xl">0</div>
+                <div className="text-900 font-medium text-xl">
+                  {summary?.pendingDrafts ?? 0}
+                </div>
               </div>
               <div
                 className="flex align-items-center justify-content-center bg-purple-100 border-round-lg"

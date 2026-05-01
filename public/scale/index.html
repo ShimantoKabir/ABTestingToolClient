@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -22,9 +22,9 @@
           <span class="logo-text">Graph Page</span>
         </a>
         <ul class="nav-links">
-          <li><a href="#home" class="active">Home</a></li>
-          <li><a href="#dashboard">Dashboard</a></li>
-          <li><a href="#analytics">Analytics</a></li>
+          <li><a href="/graph" class="active">Home</a></li>
+          <li><a href="/graph/dashboard">Dashboard</a></li>
+          <li><a href="/graph/analytics">Analytics</a></li>
           <li><a href="#reports">Reports</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
@@ -736,6 +736,18 @@
     </footer>
 
     <script src="main.js"></script>
+    <style id="ab-anti-flicker">
+      html {
+        opacity: 0 !important;
+      }
+    </style>
+    <script>
+      setTimeout(function () {
+        var s = document.getElementById("ab-anti-flicker");
+        if (s) s.remove();
+      }, 3000);
+    </script>
+    <script src="https://brainlabs.digital/cro/ab-testing-tool/client-sdk.js"></script>
     <script>
       // Wait for window load if you are still getting errors
       window.addEventListener("load", () => {

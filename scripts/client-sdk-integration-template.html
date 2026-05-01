@@ -4,6 +4,18 @@
     <script src="https://ab-server-live-115286204440.us-central1.run.app/static/client-sdk.js"></script>
   </head>
   <body>
+    <style id="ab-anti-flicker">
+      html {
+        opacity: 0 !important;
+      }
+    </style>
+    <script>
+      setTimeout(function () {
+        var s = document.getElementById("ab-anti-flicker");
+        if (s) s.remove();
+      }, 3000);
+    </script>
+    <script src="https://brainlabs.digital/cro/ab-testing-tool/client-sdk.js"></script>
     <script>
       // Wait for window load if you are still getting errors
       window.addEventListener("load", () => {

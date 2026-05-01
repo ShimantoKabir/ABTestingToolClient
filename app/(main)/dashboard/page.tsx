@@ -31,7 +31,7 @@ export default function Dashboard() {
   );
   const [activityTotal, setActivityTotal] = useState<number>(0);
   const [activityLoading, setActivityLoading] = useState<boolean>(false);
-  const [lazyParams, setLazyParams] = useState({ page: 1, rows: 10, first: 0 });
+  const [lazyParams, setLazyParams] = useState({ page: 1, rows: 5, first: 0 });
 
   const toast = useRef<Toast>(null);
 
@@ -203,7 +203,7 @@ export default function Dashboard() {
               first={lazyParams.first}
               totalRecords={activityTotal}
               onPage={onPageChange}
-              rowsPerPageOptions={[10, 25, 50]}
+              rowsPerPageOptions={[5, 10, 25, 50]}
               emptyMessage="No activity logs found."
             >
               <Column header="Date" body={formatDate} />

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head> </head>
+  <body>
+    <style id="ab-anti-flicker">
+      html {
+        opacity: 0 !important;
+      }
+    </style>
+    <script>
+      setTimeout(function () {
+        var s = document.getElementById("ab-anti-flicker");
+        if (s) s.remove();
+      }, 3000);
+    </script>
+    <script src="http://localhost:8000/static/client-sdk.js"></script>
+    <script>
+      // Wait for window load if you are still getting errors
+      window.addEventListener("load", () => {
+        if (typeof ABTestingClient === "undefined") {
+          console.error("SDK failed to load!");
+          return;
+        }
+
+        window.abClient = new ABTestingClient({
+          serverBaseUrl: "http://localhost:8000",
+          projectId: 1,
+        });
+
+        window.abClient.init();
+      });
+    </script>
+  </body>
+</html>

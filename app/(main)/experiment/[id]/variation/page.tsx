@@ -10,6 +10,11 @@ import {
   VariationCreateRequestDto,
   VariationUpdateRequestDto,
 } from "./dtos/variation.dto";
+import {
+  ExperimentService,
+  ExperimentServiceToken,
+} from "@/app/(main)/experiment/services/experiment.service";
+import { ExperimentResponseDto } from "@/app/(main)/experiment/dtos/experiment.dto";
 import { ErrorResponseDto } from "@/app/network/error-response.dto";
 
 import { Splitter, SplitterPanel } from "primereact/splitter";
@@ -32,8 +37,15 @@ export default function VariationsPage(props: Props) {
   const params = use(props.params);
   const expId = parseInt(params.id);
   const service = container.get<VariationService>(VariationServiceToken);
+  const experimentService = container.get<ExperimentService>(
+    ExperimentServiceToken,
+  );
   const toast = useRef<Toast>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const [experiment, setExperiment] = useState<ExperimentResponseDto | null>(
+    null,
+  );
   const [variations, setVariations] = useState<VariationResponseDto[]>([]);
   const [selectedVar, setSelectedVar] = useState<VariationResponseDto | null>(
     null,
@@ -45,7 +57,7 @@ export default function VariationsPage(props: Props) {
   const [isSaving, setIsSaving] = useState(false);
 
   // Layout State
-  const [showEditors, setShowEditors] = useState(true);
+  const [showEditors, setShowEditors] = useState(false);
 
   // Full Screen State
   const [expandedEditor, setExpandedEditor] = useState<"js" | "css" | null>(
@@ -57,8 +69,33 @@ export default function VariationsPage(props: Props) {
   const [newVarTitle, setNewVarTitle] = useState("");
 
   useEffect(() => {
+    loadExperiment();
     loadVariations();
   }, [expId]);
+
+  const handleIframeLoad = () => {
+    const iframe = iframeRef.current;
+    if (!iframe || !selectedVar) return;
+    try {
+      const currentUrl = iframe.contentWindow?.location.href;
+      if (!currentUrl) return;
+      const url = new URL(currentUrl);
+      if (!url.searchParams.has("preview-experiment-id")) {
+        url.searchParams.set("preview-experiment-id", String(expId));
+        url.searchParams.set("variation-id", String(selectedVar.id));
+        iframe.src = url.toString();
+      }
+    } catch {
+      // cross-origin navigation — params cannot be re-injected
+    }
+  };
+
+  const loadExperiment = async () => {
+    const res = await experimentService.getExperimentById(expId);
+    if (!(res instanceof ErrorResponseDto)) {
+      setExperiment(res);
+    }
+  };
 
   const loadVariations = async () => {
     const res = await service.getVariations(expId);
@@ -327,11 +364,28 @@ export default function VariationsPage(props: Props) {
           )}
 
           {!expandedEditor && (
-            <div className="flex-1 surface-card border-round shadow-1 p-3 flex align-items-center justify-content-center bg-gray-100">
-              <div className="text-500">
-                <i className="pi pi-desktop text-3xl mb-2 block text-center"></i>
-                Preview Mode [Not Implemented!]
-              </div>
+            <div className="flex-1 surface-card border-round shadow-1 overflow-hidden">
+              {experiment?.url && selectedVar ? (
+                <iframe
+                  ref={iframeRef}
+                  key={selectedVar.id}
+                  src={`${experiment.url}?preview-experiment-id=${expId}&variation-id=${selectedVar.id}`}
+                  className="w-full h-full border-none"
+                  title="Variation Preview"
+                  onLoad={handleIframeLoad}
+                />
+              ) : (
+                <div className="w-full h-full flex align-items-center justify-content-center">
+                  <div className="text-500 text-center">
+                    <i className="pi pi-desktop text-3xl mb-2 block"></i>
+                    <span>
+                      {!experiment?.url
+                        ? "No target URL set for this experiment."
+                        : "Select a variation to preview."}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </SplitterPanel>

@@ -27,7 +27,7 @@ export default function RootLayout({
           href="/themes/lara-light-indigo/theme.css"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <AuthGuard>{children}</AuthGuard>
           <ThemeSwitcher />

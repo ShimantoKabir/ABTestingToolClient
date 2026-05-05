@@ -275,13 +275,13 @@ export default function ResultsPage(props: Props) {
               <Column header="Date" body={formatDate} />
               <Column field="metricName" header="Metric" />
               <Column field="variationName" header="Variation" />
-              <Column field="visitorId" header="Visitor ID" />
+              <Column field="visitorId" header="VID" />
               <Column field="mode" header="Mode" />
               <Column field="revenue" header="Revenue" />
               <Column field="device" header="Device" />
               <Column field="browser" header="Browser" />
-              <Column field="urlPathname" header="URL Path" />
-              <Column field="sessionId" header="Session ID" />
+              <Column field="urlPathname" header="Path" />
+              <Column field="sessionId" header="SID" />
             </DataTable>
           </>
         )}
